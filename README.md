@@ -5,9 +5,13 @@ An interactive map visualization of 8,508 global mining locations, inspired by E
 ## Features
 
 - 🗺️ Interactive world map with 8,508 mining locations
+- 🎯 **Smart clustering** - Groups nearby mines for better performance
 - 🌍 Globe projection for better world view
 - 🎨 Clean, minimal dark theme similar to Electricity Maps
-- 📍 Zoom-based circle sizing and opacity
+- 📍 Zoom-based display:
+  - Clusters at world/country level (shows count)
+  - Individual mines at city level (zoom 10+)
+- 🖱️ Click clusters to zoom in, click mines for details
 - 📊 Data from ICMM Global Mining Dataset (September 2025)
 
 ## Quick Start
