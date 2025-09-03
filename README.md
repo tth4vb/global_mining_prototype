@@ -15,7 +15,7 @@ An interactive map visualization of 8,508 global mining locations, inspired by E
 ### Prerequisites
 
 1. Node.js 16+ installed
-2. A Mapbox account and API token (free at [mapbox.com](https://account.mapbox.com/))
+2. No API keys required! (Uses OpenStreetMap with Leaflet)
 
 ### Setup
 
@@ -31,19 +31,30 @@ cd frontend
 npm install
 ```
 
-3. Add your Mapbox token:
-   - Copy `.env.example` to `.env.local`
-   - Add your Mapbox token to `.env.local`:
-   ```
-   REACT_APP_MAPBOX_TOKEN=your_actual_mapbox_token_here
-   ```
-
-4. Start the development server:
+3. Start the development server:
 ```bash
 npm start
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Map Options
+
+The project now uses **Leaflet with OpenStreetMap** (completely free, no API key required!). 
+
+### Available Free Tile Providers:
+- **CartoDB Dark** (default) - Dark theme similar to Electricity Maps
+- **CartoDB Voyager** - Clean light theme
+- **OpenStreetMap** - Standard map tiles
+- **Stadia Maps** - Alternative dark theme (free account required, no payment)
+
+To switch themes, edit `src/components/Map/MapLeaflet.tsx` and uncomment your preferred TileLayer.
+
+### Using Mapbox (Optional)
+If you prefer Mapbox's features:
+1. Get a free token from [mapbox.com](https://account.mapbox.com/)
+2. Add it to `.env.local`
+3. Change `src/components/Map/index.ts` to export from `'./Map'` instead of `'./MapLeaflet'`
 
 ## Project Structure
 
