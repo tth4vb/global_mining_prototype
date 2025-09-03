@@ -4,10 +4,7 @@ import L from 'leaflet';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet/dist/leaflet.css';
-import { MineGeoJsonFeature } from '../../types/mine';
-
-// Import the JSON data directly
-const minesData = require('../../data/mines.geojson');
+import { MineGeoJsonFeature, MineGeoJson } from '../../types/mine';
 
 let DefaultIcon = L.icon({
   iconUrl: icon,
@@ -18,7 +15,7 @@ let DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 // Component to handle map events and display coordinates
-function MapInfo() {
+function MapInfo({ minesCount }: { minesCount: number }) {
   const map = useMap();
   const [position, setPosition] = useState({ lat: 0, lng: 0, zoom: 2 });
 
@@ -49,7 +46,7 @@ function MapInfo() {
         <div className="text-xs font-mono">
           <div>Longitude: {position.lng} | Latitude: {position.lat}</div>
           <div>Zoom: {position.zoom}</div>
-          <div className="text-green-400 mt-1">✓ {minesData?.features?.length || 0} mines loaded</div>
+          <div className="text-green-400 mt-1">✓ {minesCount} mines loaded</div>
         </div>
       </div>
     </div>
@@ -57,7 +54,7 @@ function MapInfo() {
 }
 
 // Component to render all mines
-function MinesLayer() {
+function MinesLayer({ minesData }: { minesData: MineGeoJson | null }) {
   const map = useMap();
   const [zoom, setZoom] = useState(map.getZoom());
 
@@ -134,8 +131,41 @@ interface MapLeafletProps {
 }
 
 const MapLeaflet: React.FC<MapLeafletProps> = ({ className = '' }) => {
+  const [minesData, setMinesData] = useState<MineGeoJson | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Load the GeoJSON data
+    fetch('/mines.geojson')
+      .then(response => response.json())
+      .then(data => {
+        setMinesData(data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error loading mines data:', error);
+        // Try loading from the data directory
+        fetch('/data/mines.geojson')
+          .then(response => response.json())
+          .then(data => {
+            setMinesData(data);
+            setLoading(false);
+          })
+          .catch(err => {
+            console.error('Error loading mines data from /data:', err);
+            setLoading(false);
+          });
+      });
+  }, []);
+
   return (
     <div className={`relative h-full ${className}`}>
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-50">
+          <div className="text-white text-xl">Loading mine data...</div>
+        </div>
+      )}
+      
       <MapContainer
         center={[20, 0]}
         zoom={2}
@@ -145,35 +175,15 @@ const MapLeaflet: React.FC<MapLeafletProps> = ({ className = '' }) => {
         maxZoom={18}
         worldCopyJump={true}
       >
-        {/* Free tile providers - no API key needed! */}
-        
-        {/* Option 1: CartoDB Dark (similar to Electricity Maps) */}
+        {/* CartoDB Dark (similar to Electricity Maps) */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
         
-        {/* Option 2: CartoDB Voyager (light theme) - uncomment to use */}
-        {/* <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-        /> */}
-        
-        {/* Option 3: OpenStreetMap (standard) - uncomment to use */}
-        {/* <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        /> */}
-        
-        {/* Option 4: Stadia Dark (requires free account but no payment) - uncomment to use */}
-        {/* <TileLayer
-          attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-          url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
-        /> */}
-
         <ZoomControl position="topright" />
-        <MapInfo />
-        <MinesLayer />
+        <MapInfo minesCount={minesData?.features?.length || 0} />
+        <MinesLayer minesData={minesData} />
       </MapContainer>
     </div>
   );
