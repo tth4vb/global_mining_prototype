@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import minesData from '../../data/mines.geojson';
-import { MineGeoJsonFeature } from '../../types/mine';
-
-// Fix Leaflet icon issue in React
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import 'leaflet/dist/leaflet.css';
+import { MineGeoJsonFeature } from '../../types/mine';
+
+// Import the JSON data directly
+const minesData = require('../../data/mines.geojson');
 
 let DefaultIcon = L.icon({
   iconUrl: icon,
@@ -49,7 +49,7 @@ function MapInfo() {
         <div className="text-xs font-mono">
           <div>Longitude: {position.lng} | Latitude: {position.lat}</div>
           <div>Zoom: {position.zoom}</div>
-          <div className="text-green-400 mt-1">✓ {minesData.features.length} mines loaded</div>
+          <div className="text-green-400 mt-1">✓ {minesData?.features?.length || 0} mines loaded</div>
         </div>
       </div>
     </div>
@@ -87,9 +87,13 @@ function MinesLayer() {
   const radius = getRadius(zoom);
   const opacity = getOpacity(zoom);
 
+  if (!minesData || !minesData.features) {
+    return null;
+  }
+
   return (
     <>
-      {(minesData as any).features.map((feature: MineGeoJsonFeature, index: number) => {
+      {minesData.features.map((feature: MineGeoJsonFeature, index: number) => {
         const [lng, lat] = feature.geometry.coordinates;
         const props = feature.properties;
         
