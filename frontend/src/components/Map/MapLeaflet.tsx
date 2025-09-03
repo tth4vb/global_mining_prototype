@@ -106,7 +106,7 @@ function MinesLayer() {
               fillOpacity: opacity * 0.8,
             }}
             eventHandlers={{
-              mouseover: (e) => {
+              mouseover: (e: any) => {
                 const layer = e.target;
                 layer.bindPopup(`
                   <div class="font-sans">
