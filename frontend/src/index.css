@@ -2,8 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -11,7 +15,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+#root {
+  width: 100%;
+  height: 100%;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Ensure Leaflet map container doesn't override z-index */
+.leaflet-container {
+  z-index: 0 !important;
+  background-color: #181818 !important; /* Match dark tile color */
+}
+
+/* Ensure Leaflet popups appear above map but below side panel */
+.leaflet-popup {
+  z-index: 1000 !important;
 }

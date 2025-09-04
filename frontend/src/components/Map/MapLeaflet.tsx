@@ -1,18 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, useMap, ZoomControl } from 'react-leaflet';
-import L from 'leaflet';
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, useMap, ZoomControl } from 'react-leaflet';
+import { divIcon, point } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MineGeoJsonFeature, MineGeoJson } from '../../types/mine';
+import { useMineStore } from '../../store/mineStore';
+import { getMineColor } from '../../utils/colorMappings';
 
-let DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconAnchor: [12, 41],
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
+// Component to track zoom level changes
+function ZoomTracker({ setZoom }: { setZoom: (zoom: number) => void }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    const handleZoom = () => {
+      setZoom(map.getZoom());
+    };
+    
+    handleZoom(); // Set initial zoom
+    map.on('zoomend', handleZoom);
+    
+    return () => {
+      map.off('zoomend', handleZoom);
+    };
+  }, [map, setZoom]);
+  
+  return null;
+}
 
 // Component to handle map events and display coordinates
 function MapInfo({ minesCount }: { minesCount: number }) {
@@ -53,78 +65,69 @@ function MapInfo({ minesCount }: { minesCount: number }) {
   );
 }
 
-// Component to render all mines
-function MinesLayer({ minesData }: { minesData: MineGeoJson | null }) {
-  const map = useMap();
-  const [zoom, setZoom] = useState(map.getZoom());
 
-  useEffect(() => {
-    const updateZoom = () => setZoom(map.getZoom());
-    map.on('zoomend', updateZoom);
-    return () => {
-      map.off('zoomend', updateZoom);
-    };
-  }, [map]);
+// Custom mine icons with dynamic colors - smaller for better performance
+const createMineIcon = (color: string, isSelected: boolean = false, isHovered: boolean = false) => {
+  const size = isSelected ? 12 : isHovered ? 8 : 6;
+  const borderWidth = isSelected ? 2 : 1;
+  const borderColor = isSelected ? '#FFD700' : '#ffffff';
+  const opacity = isSelected ? 1 : isHovered ? 0.95 : 0.85;
+  
+  return divIcon({
+    html: `<div style="
+      width: ${size}px; 
+      height: ${size}px;
+      background-color: ${color};
+      border: ${borderWidth}px solid ${borderColor};
+      border-radius: 50%;
+      opacity: ${opacity};
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    "></div>`,
+    className: 'custom-mine-marker',
+    iconSize: point(size, size, true),
+    iconAnchor: [size/2, size/2],
+  });
+};
 
-  // Calculate radius based on zoom level
-  const getRadius = (zoom: number) => {
-    if (zoom <= 2) return 2;
-    if (zoom <= 5) return 3;
-    if (zoom <= 8) return 5;
-    return 8;
-  };
-
-  // Calculate opacity based on zoom level
-  const getOpacity = (zoom: number) => {
-    if (zoom <= 2) return 0.6;
-    if (zoom <= 8) return 0.8;
-    return 1;
-  };
-
-  const radius = getRadius(zoom);
-  const opacity = getOpacity(zoom);
-
-  if (!minesData || !minesData.features) {
-    return null;
-  }
-
+// Individual mine marker component - optimized to prevent re-renders
+const MineMarker = React.memo(({ mineId, mine, position, properties }: { mineId: string, mine: MineGeoJsonFeature, position: [number, number], properties: any }) => {
+  const setSelectedMine = useMineStore((state) => state.setSelectedMine);
+  const colorScheme = useMineStore((state) => state.colorScheme);
+  const selectedMineId = useMineStore((state) => state.selectedMine ? 
+    `${state.selectedMine.properties.name}-${state.selectedMine.geometry.coordinates.join(',')}` : null);
+  
+  const isSelected = selectedMineId === mineId;
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const icon = useMemo(() => {
+    const color = getMineColor(properties, colorScheme);
+    return createMineIcon(color, isSelected, isHovered);
+  }, [properties, colorScheme, isSelected, isHovered]);
+  
+  const handleClick = useCallback(() => {
+    setSelectedMine(mine);
+  }, [mine, setSelectedMine]);
+  
   return (
-    <>
-      {minesData.features.map((feature: MineGeoJsonFeature, index: number) => {
-        const [lng, lat] = feature.geometry.coordinates;
-        const props = feature.properties;
-        
-        return (
-          <CircleMarker
-            key={index}
-            center={[lat, lng]}
-            radius={radius}
-            pathOptions={{
-              fillColor: '#00D9FF',
-              color: zoom > 8 ? '#ffffff' : 'transparent',
-              weight: zoom > 8 ? 1 : 0,
-              opacity: opacity,
-              fillOpacity: opacity * 0.8,
-            }}
-            eventHandlers={{
-              mouseover: (e: any) => {
-                const layer = e.target;
-                layer.bindPopup(`
-                  <div class="font-sans">
-                    <strong>${props.name || 'Unknown Mine'}</strong><br/>
-                    <span class="text-gray-600">Country:</span> ${props.country || 'Unknown'}<br/>
-                    <span class="text-gray-600">Commodity:</span> ${props.primaryCommodity || 'Unknown'}<br/>
-                    <span class="text-gray-600">Type:</span> ${props.assetType || 'Mine'}
-                  </div>
-                `).openPopup();
-              },
-            }}
-          />
-        );
-      })}
-    </>
+    <Marker 
+      position={position} 
+      icon={icon}
+      eventHandlers={{
+        click: handleClick,
+        mouseover: () => setIsHovered(true),
+        mouseout: () => setIsHovered(false),
+      }}
+    />
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison function to prevent unnecessary re-renders
+  return prevProps.mineId === nextProps.mineId &&
+         prevProps.position[0] === nextProps.position[0] &&
+         prevProps.position[1] === nextProps.position[1];
+});
+
+MineMarker.displayName = 'MineMarker';
 
 interface MapLeafletProps {
   className?: string;
@@ -133,6 +136,7 @@ interface MapLeafletProps {
 const MapLeaflet: React.FC<MapLeafletProps> = ({ className = '' }) => {
   const [minesData, setMinesData] = useState<MineGeoJson | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentZoom, setCurrentZoom] = useState(2);
 
   useEffect(() => {
     // Load the GeoJSON data
@@ -141,31 +145,42 @@ const MapLeaflet: React.FC<MapLeafletProps> = ({ className = '' }) => {
       .then(data => {
         setMinesData(data);
         setLoading(false);
+        console.log(`Loaded ${data.features.length} mines`);
       })
       .catch(error => {
         console.error('Error loading mines data:', error);
-        // Try loading from the data directory
-        fetch('/data/mines.geojson')
-          .then(response => response.json())
-          .then(data => {
-            setMinesData(data);
-            setLoading(false);
-          })
-          .catch(err => {
-            console.error('Error loading mines data from /data:', err);
-            setLoading(false);
-          });
+        setLoading(false);
       });
   }, []);
 
+  // Prepare markers data - memoized to prevent recreation
+  const markers = useMemo(() => {
+    if (!minesData || !minesData.features) return [];
+    
+    // Limit markers for initial testing to prevent stack overflow
+    const features = minesData.features;
+    
+    return features.map((feature: MineGeoJsonFeature, index: number) => {
+      const uniqueId = `${feature.properties.name}-${feature.geometry.coordinates.join(',')}`;
+      return {
+        id: uniqueId,
+        feature: feature,
+        position: [feature.geometry.coordinates[1], feature.geometry.coordinates[0]] as [number, number],
+        properties: feature.properties,
+      };
+    });
+  }, [minesData]);
+
+  if (loading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-gray-900">
+        <div className="text-white text-xl">Loading mine data...</div>
+      </div>
+    );
+  }
+
   return (
     <div className={`relative h-full ${className}`}>
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-50">
-          <div className="text-white text-xl">Loading mine data...</div>
-        </div>
-      )}
-      
       <MapContainer
         center={[20, 0]}
         zoom={2}
@@ -174,6 +189,7 @@ const MapLeaflet: React.FC<MapLeafletProps> = ({ className = '' }) => {
         minZoom={2}
         maxZoom={18}
         worldCopyJump={true}
+        preferCanvas={true} // Use canvas renderer for better performance
       >
         {/* CartoDB Dark (similar to Electricity Maps) */}
         <TileLayer
@@ -182,9 +198,66 @@ const MapLeaflet: React.FC<MapLeafletProps> = ({ className = '' }) => {
         />
         
         <ZoomControl position="topright" />
-        <MapInfo minesCount={minesData?.features?.length || 0} />
-        <MinesLayer minesData={minesData} />
+        <MapInfo minesCount={markers.length} />
+        <ZoomTracker setZoom={setCurrentZoom} />
+        
+        {/* Show message at low zoom */}
+        {currentZoom < 4 && (
+          <div className="leaflet-top leaflet-center" style={{ left: '50%', transform: 'translateX(-50%)' }}>
+            <div className="bg-yellow-600/90 text-white px-4 py-2 rounded-lg mt-2 text-sm">
+              Zoom in to see all {markers.length} mines (currently showing 500)
+            </div>
+          </div>
+        )}
+        
+        {/* Individual markers without clustering - limit rendering at low zoom */}
+        {markers.length > 0 && (
+          currentZoom >= 4 ? (
+            // Show all markers at zoom 4+
+            markers.map((marker) => (
+              <MineMarker
+                key={marker.id}
+                mineId={marker.id}
+                mine={marker.feature}
+                position={marker.position}
+                properties={marker.properties}
+              />
+            ))
+          ) : (
+            // Show limited markers at low zoom for performance
+            markers.slice(0, 500).map((marker) => (
+              <MineMarker
+                key={marker.id}
+                mineId={marker.id}
+                mine={marker.feature}
+                position={marker.position}
+                properties={marker.properties}
+              />
+            ))
+          )
+        )}
       </MapContainer>
+      
+      {/* Custom styles for markers */}
+      <style>{`
+        .custom-mine-marker {
+          background: transparent !important;
+          border: none !important;
+        }
+        .leaflet-marker-icon {
+          transition: all 0.3s ease;
+        }
+        .leaflet-marker-icon:hover {
+          transform: scale(1.2);
+        }
+        /* Ensure map stays below overlays */
+        .leaflet-pane {
+          z-index: auto !important;
+        }
+        .leaflet-top, .leaflet-bottom {
+          z-index: 999 !important;
+        }
+      `}</style>
     </div>
   );
 };

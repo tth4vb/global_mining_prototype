@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, ZoomControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
-import L, { divIcon, point } from 'leaflet';
+import { divIcon, point } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet.markercluster/dist/MarkerCluster.css';
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { MineGeoJsonFeature, MineGeoJson } from '../../types/mine';
+import { useMineStore } from '../../store/mineStore';
+import { getMineColor } from '../../utils/colorMappings';
 
 // Component to handle map events and display coordinates
 function MapInfo({ minesCount }: { minesCount: number }) {
@@ -34,8 +34,8 @@ function MapInfo({ minesCount }: { minesCount: number }) {
   }, [map]);
 
   return (
-    <div className="leaflet-top leaflet-left">
-      <div className="bg-black/80 text-white px-3 py-2 rounded-lg backdrop-blur-sm ml-2 mt-2">
+    <div className="leaflet-top leaflet-left" style={{ marginTop: '80px' }}>
+      <div className="bg-black/90 text-white px-3 py-2 rounded-lg ml-2">
         <div className="text-xs font-mono">
           <div>Longitude: {position.lng} | Latitude: {position.lat}</div>
           <div>Zoom: {position.zoom}</div>
@@ -46,65 +46,90 @@ function MapInfo({ minesCount }: { minesCount: number }) {
   );
 }
 
-// Custom cluster icon creator
-const createClusterCustomIcon = function (cluster: any) {
+// Custom cluster icon - NEUTRAL COLOR (not based on commodities)
+const createClusterCustomIcon = (cluster: any) => {
   const count = cluster.getChildCount();
-  let size = 'small';
-  let className = 'bg-cyan-500/80';
+  let size = 30;
+  let className = 'text-xs';
   
   if (count > 100) {
-    size = 'large';
-    className = 'bg-cyan-600/90';
-  } else if (count > 50) {
-    size = 'medium';
-    className = 'bg-cyan-500/85';
+    size = 40;
+    className = 'text-sm font-bold';
+  } else if (count > 500) {
+    size = 50;
+    className = 'text-base font-bold';
   }
 
-  const sizeMap = {
-    small: 40,
-    medium: 50,
-    large: 60,
-  };
-
+  // Use neutral cyan color for all clusters
+  const color = '#06B6D4'; // Cyan-500
+  
   return divIcon({
-    html: `<div class="${className} text-white font-bold rounded-full flex items-center justify-center border-2 border-white/50" style="width: ${sizeMap[size as keyof typeof sizeMap]}px; height: ${sizeMap[size as keyof typeof sizeMap]}px;">
-      <span class="text-sm">${count}</span>
+    html: `<div style="
+      width: ${size}px; 
+      height: ${size}px;
+      background: ${color};
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    ">
+      <span class="${className}">${count}</span>
     </div>`,
-    className: 'custom-marker-cluster',
-    iconSize: point(sizeMap[size as keyof typeof sizeMap], sizeMap[size as keyof typeof sizeMap], true),
+    className: 'custom-cluster-marker',
+    iconSize: point(size, size, true),
   });
 };
 
-// Custom mine icon - created once and reused
-const mineIcon = divIcon({
-  html: `<div class="bg-cyan-400 rounded-full border-2 border-white/80" style="width: 12px; height: 12px;"></div>`,
-  className: 'custom-mine-marker',
-  iconSize: point(12, 12, true),
-  iconAnchor: [6, 6],
-});
 
-// Individual mine marker component
-const MineMarker = React.memo(({ position, properties }: { position: [number, number], properties: any }) => {
+// Create icon cache to prevent recreation
+const iconCache = new Map<string, any>();
+
+const getCachedIcon = (color: string, size: number) => {
+  const key = `${color}-${size}`;
+  if (!iconCache.has(key)) {
+    iconCache.set(key, divIcon({
+      html: `<div style="
+        width: ${size}px; 
+        height: ${size}px;
+        background-color: ${color};
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        opacity: 0.85;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      "></div>`,
+      className: 'custom-mine-marker',
+      iconSize: point(size, size, true),
+      iconAnchor: [size/2, size/2],
+    }));
+  }
+  return iconCache.get(key);
+};
+
+// Individual mine marker component - ultra simplified
+const MineMarker = React.memo(({ mine }: { mine: MineGeoJsonFeature }) => {
+  const colorScheme = useMineStore((state) => state.colorScheme);
+  const setSelectedMine = useMineStore((state) => state.setSelectedMine);
+  
+  const color = getMineColor(mine.properties, colorScheme);
+  const icon = getCachedIcon(color, 16);
+  
+  const position: [number, number] = [
+    mine.geometry.coordinates[1], 
+    mine.geometry.coordinates[0]
+  ];
+  
   return (
-    <Marker position={position} icon={mineIcon}>
-      <Popup>
-        <div className="font-sans">
-          <strong className="text-lg">{properties.name || 'Unknown Mine'}</strong>
-          <div className="mt-2 space-y-1 text-sm">
-            <div><span className="font-semibold">Country:</span> {properties.country || 'Unknown'}</div>
-            <div><span className="font-semibold">Commodity:</span> {properties.primaryCommodity || 'Unknown'}</div>
-            {properties.secondaryCommodity && (
-              <div><span className="font-semibold">Secondary:</span> {properties.secondaryCommodity}</div>
-            )}
-            <div><span className="font-semibold">Type:</span> {properties.assetType || 'Mine'}</div>
-            <div><span className="font-semibold">Confidence:</span> {properties.confidenceFactor || 'Unknown'}</div>
-            {properties.groupNames && (
-              <div className="text-xs mt-1"><span className="font-semibold">Group:</span> {properties.groupNames}</div>
-            )}
-          </div>
-        </div>
-      </Popup>
-    </Marker>
+    <Marker 
+      position={position} 
+      icon={icon}
+      eventHandlers={{
+        click: () => setSelectedMine(mine)
+      }}
+    />
   );
 });
 
@@ -117,6 +142,7 @@ interface MapLeafletClusteredProps {
 const MapLeafletClustered: React.FC<MapLeafletClusteredProps> = ({ className = '' }) => {
   const [minesData, setMinesData] = useState<MineGeoJson | null>(null);
   const [loading, setLoading] = useState(true);
+  const [renderMines, setRenderMines] = useState(false);
 
   useEffect(() => {
     // Load the GeoJSON data
@@ -126,6 +152,8 @@ const MapLeafletClustered: React.FC<MapLeafletClusteredProps> = ({ className = '
         setMinesData(data);
         setLoading(false);
         console.log(`Loaded ${data.features.length} mines`);
+        // Delay rendering mines to allow map to load first
+        setTimeout(() => setRenderMines(true), 100);
       })
       .catch(error => {
         console.error('Error loading mines data:', error);
@@ -133,19 +161,10 @@ const MapLeafletClustered: React.FC<MapLeafletClusteredProps> = ({ className = '
       });
   }, []);
 
-  // Prepare markers data - memoized to prevent recreation
-  const markers = useMemo(() => {
-    if (!minesData || !minesData.features) return [];
-    
-    // Limit markers for initial testing to prevent stack overflow
-    const features = minesData.features;
-    
-    return features.map((feature: MineGeoJsonFeature, index: number) => ({
-      id: `mine-${index}`,
-      position: [feature.geometry.coordinates[1], feature.geometry.coordinates[0]] as [number, number],
-      properties: feature.properties,
-    }));
-  }, [minesData]);
+  const mines = useMemo(() => {
+    if (!minesData || !minesData.features || !renderMines) return [];
+    return minesData.features;
+  }, [minesData, renderMines]);
 
   if (loading) {
     return (
@@ -156,16 +175,18 @@ const MapLeafletClustered: React.FC<MapLeafletClusteredProps> = ({ className = '
   }
 
   return (
-    <div className={`relative h-full ${className}`}>
+    <div className={`fixed inset-0 ${className}`}>
       <MapContainer
         center={[20, 0]}
         zoom={2}
         className="h-full w-full"
+        style={{ height: '100vh', width: '100vw' }}
         zoomControl={false}
         minZoom={2}
         maxZoom={18}
+        maxBounds={[[-90, -180], [90, 180]]}
+        maxBoundsViscosity={1.0}
         worldCopyJump={true}
-        preferCanvas={true} // Use canvas renderer for better performance
       >
         {/* CartoDB Dark (similar to Electricity Maps) */}
         <TileLayer
@@ -174,41 +195,33 @@ const MapLeafletClustered: React.FC<MapLeafletClusteredProps> = ({ className = '
         />
         
         <ZoomControl position="topright" />
-        <MapInfo minesCount={markers.length} />
+        <MapInfo minesCount={mines.length} />
         
-        {/* Clustered markers with optimizations */}
-        {markers.length > 0 && (
+        {/* Marker Clustering with neutral colors */}
+        {mines.length > 0 && (
           <MarkerClusterGroup
             chunkedLoading
-            chunkInterval={200}
-            chunkDelay={50}
+            chunkInterval={500}
+            chunkDelay={100}
             iconCreateFunction={createClusterCustomIcon}
-            maxClusterRadius={60}
-            spiderfyOnMaxZoom={true}
+            maxClusterRadius={80}
+            spiderfyOnMaxZoom={false}
             showCoverageOnHover={false}
             zoomToBoundsOnClick={true}
+            disableClusteringAtZoom={15}
+            animate={false}
             removeOutsideVisibleBounds={true}
-            animate={true}
-            animateAddingMarkers={false}
-            disableClusteringAtZoom={10}
-            singleMarkerMode={false}
           >
-            {markers.map((marker) => (
-              <MineMarker
-                key={marker.id}
-                position={marker.position}
-                properties={marker.properties}
-              />
+            {mines.map((mine, index) => (
+              <MineMarker key={`${mine.properties.name}-${index}`} mine={mine} />
             ))}
           </MarkerClusterGroup>
         )}
       </MapContainer>
       
-      {/* Custom styles for clusters */}
+      {/* Custom styles */}
       <style>{`
-        .custom-marker-cluster {
-          background: transparent !important;
-        }
+        .custom-cluster-marker,
         .custom-mine-marker {
           background: transparent !important;
           border: none !important;
@@ -218,18 +231,20 @@ const MapLeafletClustered: React.FC<MapLeafletClusteredProps> = ({ className = '
         }
         .leaflet-marker-icon:hover {
           transform: scale(1.2);
+          z-index: 10000 !important;
         }
-        .marker-cluster-small {
-          background-color: rgba(6, 182, 212, 0.8);
-        }
-        .marker-cluster-medium {
-          background-color: rgba(6, 182, 212, 0.85);
-        }
+        /* Cluster animation */
+        .marker-cluster-small,
+        .marker-cluster-medium,
         .marker-cluster-large {
-          background-color: rgba(6, 182, 212, 0.9);
+          background: transparent !important;
         }
-        .leaflet-popup-content {
-          min-width: 200px;
+        /* Ensure map stays below overlays */
+        .leaflet-pane {
+          z-index: auto !important;
+        }
+        .leaflet-top, .leaflet-bottom {
+          z-index: 999 !important;
         }
       `}</style>
     </div>

@@ -1,4 +1,4 @@
-// Use Leaflet with clustering by default for better performance
-// To use non-clustered version, change this to './MapLeaflet'
-// To use Mapbox instead, change this to './Map'
-export { default } from './MapLeafletClustered';
+// Use optimized clustered map with progressive loading for 8,508 mines
+// To use Canvas rendering instead, change this to './MapCanvas'
+// To use DOM markers without clustering, change this to './MapLeaflet'
+export { default } from './MapLeafletClusteredOptimized';
