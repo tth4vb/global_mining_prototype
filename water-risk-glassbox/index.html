@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Water-Risk Glass Box</title>
+<meta name="description" content="An interactive, transparent water-risk screening model for critical-minerals mine sites.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ---------- Tokens: light is the committed default ---------- */
+:root{
+  --ground:#eff2f7;
+  --surface:#ffffff;
+  --surface-2:#eef1f6;
+  --surface-3:#f6f8fb;
+  --border:#dde3ec;
+  --border-strong:#c2cbd9;
+  --ink:#1a1f28;
+  --ink-2:#59636f;
+  --ink-3:#8b95a3;
+  --gold:#f0ab00;
+  --gold-strong:#b98600;
+  --gold-tint:#fdf2d6;
+  --blue:#0a4298;
+  --blue-2:#3855a3;
+  --blue-link:#0a4298;
+  --blue-tint:#eaf0fb;
+  --t1:#009e77;   --t1-bg:#e6f4f0;
+  --t1p:#3855a3;  --t1p-bg:#e8edf7;
+  --t2:#5b6e8c;   --t2-bg:#ebeef4;
+  --t3:#9a7800;   --t3-bg:#f8f0d7;
+  --t4:#b0392e;   --t4-bg:#f8ece9;
+  --good:#009e77;
+  --warn:#a88100;
+  --bad:#c11101;
+  --fire:#f0ab00;
+  --fire-wash:#fdf3d8;
+  --shadow:0 1px 2px rgba(20,30,50,.05),0 10px 30px rgba(20,30,50,.07);
+  --shadow-sm:0 1px 2px rgba(20,30,50,.07);
+}
+/* ---------- Optional dark, only when the user asks for it ---------- */
+:root[data-theme="dark"]{
+  --ground:#0f131a;
+  --surface:#171c25;
+  --surface-2:#212836;
+  --surface-3:#1b212c;
+  --border:#2c3542;
+  --border-strong:#3d4757;
+  --ink:#e8ecf3;
+  --ink-2:#a4aec0;
+  --ink-3:#6c7789;
+  --gold:#f0ab00;
+  --gold-strong:#f0ab00;
+  --gold-tint:#2a2410;
+  --blue:#8fa9e6;
+  --blue-2:#3855a3;
+  --blue-link:#8fa9e6;
+  --blue-tint:#182640;
+  --t1:#2bb894;   --t1-bg:#12261f;
+  --t1p:#8099d8;  --t1p-bg:#182136;
+  --t2:#93a4bf;   --t2-bg:#1b2230;
+  --t3:#d6a93a;   --t3-bg:#2a2412;
+  --t4:#e07a6a;   --t4-bg:#2b1a17;
+  --good:#2bb894;
+  --warn:#d6a93a;
+  --bad:#e5654f;
+  --fire:#f0ab00;
+  --fire-wash:#251f0d;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px rgba(0,0,0,.45);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:"Public Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:"Barlow Semi Condensed","Public Sans",sans-serif;font-weight:600;line-height:1.12;margin:0;text-wrap:balance}
+a{color:var(--blue-link)}
+button{font-family:inherit}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+.tnum{font-variant-numeric:tabular-nums}
+
+.wrap{max-width:1360px;margin:0 auto;padding:0 22px}
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--ground) 90%,transparent);backdrop-filter:saturate(1.3) blur(8px);border-bottom:1px solid var(--border)}
+.top-inner{display:flex;align-items:center;gap:16px;padding:13px 22px;max-width:1360px;margin:0 auto;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;gap:1px;margin-right:auto}
+.brand .kick{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.brand h1{font-size:21px;letter-spacing:.005em}
+.brand h1 .dot{color:var(--gold-strong)}
+.tabs{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:4px}
+.tab{border:0;background:transparent;color:var(--ink-2);cursor:pointer;font-size:13px;font-weight:600;padding:7px 14px;border-radius:7px}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm)}
+.tab:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.icon-btn{border:1px solid var(--border);background:var(--surface);color:var(--ink-2);height:38px;min-width:38px;padding:0 10px;border-radius:9px;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;gap:6px;justify-content:center;font-weight:600}
+.icon-btn:hover{color:var(--ink);border-color:var(--border-strong)}
+.icon-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.thesis{padding:20px 0 4px}
+.thesis .lead{font-family:"Barlow Semi Condensed",sans-serif;font-weight:600;font-size:clamp(20px,2.3vw,26px);letter-spacing:.01em;max-width:52ch}
+.thesis p{color:var(--ink-2);max-width:74ch;margin:7px 0 0;font-size:14.5px}
+.thesis .helplink{color:var(--blue-link);font-weight:600;cursor:pointer;background:none;border:0;padding:0;font-size:14.5px;text-decoration:underline;text-underline-offset:2px}
+
+.console{display:grid;grid-template-columns:300px minmax(0,1fr) 470px;gap:16px;align-items:start;padding:12px 0 48px}
+@media(max-width:1180px){.console{grid-template-columns:1fr 1fr}.col-out{grid-column:1/-1}}
+@media(max-width:720px){.console{grid-template-columns:1fr}.col-out{grid-column:auto}}
+
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+.panel-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.panel-h .n{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3);letter-spacing:.12em;text-transform:uppercase}
+.panel-h h2{font-size:15.5px;font-weight:600}
+.panel-h .spacer{margin-left:auto}
+.panel-b{padding:16px}
+
+.col-in{position:sticky;top:76px}
+.instr{font-size:12px;color:var(--ink-2);background:var(--surface-3);border:1px solid var(--border);border-radius:9px;padding:8px 11px;margin-bottom:12px;line-height:1.45}
+.instr b{color:var(--ink)}
+.presets{display:flex;flex-direction:column;gap:8px}
+.preset{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;border:1px solid var(--border);background:var(--surface-3);border-radius:11px;padding:10px 12px;cursor:pointer;color:var(--ink)}
+.preset:hover{border-color:var(--border-strong)}
+.preset[aria-pressed="true"]{border-color:var(--blue-2);background:var(--blue-tint);box-shadow:inset 0 0 0 1px var(--blue-2)}
+.preset .p-ic{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:11px;color:var(--blue);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 7px;margin-top:1px}
+.preset .p-t{font-weight:600;font-size:13px;line-height:1.25}
+.preset .p-s{font-size:11.5px;color:var(--ink-2);margin-top:2px}
+
+.grouphdr{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--blue);font-weight:600;margin:18px 0 2px;padding-top:12px;border-top:1px solid var(--border)}
+.field{margin-top:12px}
+.field > label{display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:5px}
+.seg{display:flex;flex-wrap:wrap;gap:5px}
+.seg button{border:1px solid var(--border);background:var(--surface-3);color:var(--ink-2);font-size:12px;font-weight:500;padding:6px 10px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--blue-2);border-color:var(--blue-2);color:#fff}
+.seg button:hover{color:var(--ink)}
+.seg button:focus-visible,.preset:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.seg.mini button{font-size:11px;padding:4px 9px}
+
+.rangewrap{display:flex;align-items:center;gap:10px}
+input[type=range]{flex:1;accent-color:var(--blue-2)}
+.rangeval{font-family:"IBM Plex Mono",monospace;font-size:12px;min-width:56px;text-align:right;color:var(--ink)}
+
+.sw{display:flex;align-items:center;gap:10px;margin-top:11px;cursor:pointer}
+.sw input{position:absolute;opacity:0;width:0;height:0}
+.sw .track{width:38px;height:22px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border-strong);position:relative;transition:.15s;flex:none}
+.sw .track::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--ink-3);transition:.15s}
+.sw input:checked + .track{background:var(--blue-2);border-color:var(--blue-2)}
+.sw input:checked + .track::after{left:18px;background:#fff}
+.sw input:focus-visible + .track{outline:2px solid var(--blue);outline-offset:2px}
+.sw .sw-l{font-size:12.5px}
+.sw .sw-l small{display:block;color:var(--ink-3);font-size:11px}
+
+.aq5box{margin-top:16px;border:1px dashed var(--t3);background:var(--t3-bg);border-radius:11px;padding:12px}
+.aq5box .sw{margin-top:0}
+.aq5box .hint{font-size:11.5px;color:var(--ink-2);margin-top:8px;line-height:1.45}
+.aq5box .tag{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-weight:700}
+
+.trace-meta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3)}
+.trace-list{display:flex;flex-direction:column;font-family:"IBM Plex Mono",monospace;font-size:12px}
+.tr{display:grid;grid-template-columns:14px 108px 1fr;gap:10px;align-items:start;padding:9px 16px;border-bottom:1px solid var(--border)}
+.tr:last-child{border-bottom:0}
+.tr.fired{background:linear-gradient(90deg,var(--fire-wash),transparent 62%);box-shadow:inset 3px 0 0 var(--fire)}
+.tr.skip{opacity:.6}
+.tr .mk{width:9px;height:9px;border-radius:50%;border:1.6px solid var(--ink-3);margin-top:4px;box-sizing:border-box}
+.tr.fired .mk{background:var(--fire);border-color:var(--fire)}
+.tr.skip .mk{background:transparent}
+.tr .rid{color:var(--ink);font-weight:500}
+.tr.skip .rid{color:var(--ink-2)}
+.tr .bc{color:var(--ink-2);line-height:1.5;font-family:"Public Sans",sans-serif;font-size:12.5px}
+.tr .em{color:var(--ink);display:block;margin-top:3px;font-size:11.5px}
+.tr .em b{color:var(--gold-strong);font-weight:600}
+.trace-empty{padding:20px 16px;color:var(--ink-3);font-size:12.5px;font-family:"Public Sans",sans-serif}
+@media (prefers-reduced-motion:no-preference){.anim .tr{animation:slidein .3s both}}
+@keyframes slidein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.verdict{padding:15px 16px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:9px}
+.regime-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.regime-name{font-family:"Barlow Semi Condensed",sans-serif;font-weight:600;font-size:19px}
+.confbadge{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.05em;padding:3px 8px;border-radius:6px;border:1px solid}
+.conf-HIGH{color:var(--good);border-color:var(--good);background:var(--t1-bg)}
+.conf-MED{color:var(--warn);border-color:var(--warn);background:var(--t3-bg)}
+.conf-LOW{color:var(--bad);border-color:var(--bad);background:var(--t4-bg)}
+.flags{display:flex;flex-wrap:wrap;gap:5px}
+.flag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--surface-2);border:1px solid var(--border);color:var(--ink-2)}
+.flag.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,var(--border));background:var(--t3-bg)}
+
+.pnl{padding:14px 16px;border-bottom:1px solid var(--border)}
+.pnl:last-child{border-bottom:0}
+.pnl-h{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.pnl-key{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:11px;color:#fff;background:var(--blue-2);width:20px;height:20px;border-radius:5px;display:grid;place-items:center}
+.pnl-h h3{font-size:12px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2)}
+.pnl p{margin:0 0 7px;font-size:13.5px;line-height:1.55}
+.pnl .sub{font-size:12.5px;color:var(--ink-2);margin:5px 0 0}
+
+.tb{display:inline-flex;align-items:center;gap:4px;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;letter-spacing:.03em;padding:1px 6px;border-radius:5px;border:1px solid;vertical-align:middle;white-space:nowrap}
+.tb-T1{color:var(--t1);border-color:var(--t1);background:var(--t1-bg)}
+.tb-T1p{color:var(--t1p);border-color:var(--t1p);background:var(--t1p-bg)}
+.tb-T2{color:var(--t2);border-color:var(--t2);background:var(--t2-bg)}
+.tb-T3{color:var(--t3);border-color:var(--t3);background:var(--t3-bg)}
+.tb-T4{color:var(--t4);border-color:var(--t4);background:var(--t4-bg);border-style:dashed}
+.tb-C0{color:var(--ink-2);border-color:var(--border-strong);background:var(--surface-2)}
+
+.rows{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-top:4px}
+.row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--surface)}
+.row:last-child{border-bottom:0}
+.row .cn{font-weight:600;font-size:12.5px}
+.row .cc{font-size:11px;color:var(--ink-3);font-family:"IBM Plex Mono",monospace;margin-top:1px}
+.row .ev{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:600;letter-spacing:.03em;padding:1px 6px;border-radius:5px;border:1px solid;white-space:nowrap}
+.ev-reg{color:var(--blue-2);border-color:var(--blue-2);background:var(--t1p-bg)}
+.ev-peer{color:var(--t1);border-color:var(--t1);background:var(--t1-bg)}
+.ev-ngo{color:var(--warn);border-color:var(--warn);background:var(--t3-bg)}
+.ev-pre{color:var(--ink-3);border-color:var(--border-strong);background:var(--surface-2)}
+.subhead{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:12px 0 4px}
+details.floor{margin-top:8px}
+details.floor summary{cursor:pointer;font-size:12px;color:var(--ink-2);font-weight:600;list-style:none}
+details.floor summary::-webkit-details-marker{display:none}
+details.floor summary::before{content:"\25B8  ";color:var(--ink-3)}
+details.floor[open] summary::before{content:"\25BE  "}
+.locknote{font-size:11.5px;color:var(--ink-2);font-style:italic;margin-top:8px;line-height:1.45}
+.emptystate{margin-top:9px;border:1px dashed var(--t4);background:var(--t4-bg);border-radius:9px;padding:9px 11px;font-size:12.5px;color:var(--ink)}
+.emptystate b{color:var(--t4)}
+.bench{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.bench .bcol{font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:2px 7px;border-radius:5px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2)}
+
+.gap{padding:15px 16px;background:var(--surface-3);border-top:1px solid var(--border)}
+.gap .gh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.gap .gh .gi{font-size:15px}
+.gap .gh h3{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.gap p{margin:0;font-size:13.5px;line-height:1.55}
+.gap .route{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--blue);font-weight:600;margin-top:6px}
+.gap .secondary{font-size:12px;color:var(--ink-2);margin-top:6px}
+
+.checks{padding:13px 16px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-top:1px solid var(--border)}
+.checkpill{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;color:var(--good);background:var(--t1-bg);border:1px solid var(--good);border-radius:20px;padding:3px 10px}
+.checks .cl{font-size:11.5px;color:var(--ink-3)}
+details.banned{width:100%;margin-top:2px}
+details.banned summary{cursor:pointer;font-size:11.5px;color:var(--ink-2);font-weight:600;list-style:none}
+details.banned summary::-webkit-details-marker{display:none}
+details.banned summary::before{content:"\25B8  ";color:var(--ink-3)}
+details.banned[open] summary::before{content:"\25BE  "}
+details.banned ul{margin:8px 0 0;padding-left:18px;font-size:11.5px;color:var(--ink-2);line-height:1.5}
+details.banned li{margin-bottom:3px}
+
+/* ---------- Methodology ---------- */
+.doc{max-width:860px;margin:0 auto;padding:16px 0 64px}
+.doc h2{font-size:24px;margin:34px 0 10px}
+.doc h2:first-of-type{margin-top:14px}
+.doc h3{font-size:16px;margin:22px 0 7px}
+.doc p{color:var(--ink);max-width:70ch;margin:0 0 12px;font-size:14.5px}
+.doc .muted{color:var(--ink-2)}
+.doc .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-strong);font-weight:600}
+.tierlegend{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:6px 0 8px}
+.tiercard{border:1px solid var(--border);border-radius:11px;padding:11px 13px;background:var(--surface)}
+.tiercard .th{margin-bottom:5px}
+.tiercard p{font-size:12.5px;margin:0;color:var(--ink-2)}
+.ladder{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.rung{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.rung .rc{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:20px;color:var(--blue)}
+.rung.ceil{border-color:var(--blue-2);box-shadow:inset 0 0 0 1px var(--blue-2)}
+.rung .rt{font-weight:600;font-size:13px}
+.rung .rd{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.rung .ceilnote{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--blue);letter-spacing:.05em;text-transform:uppercase;font-weight:600}
+table.dt{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 14px}
+table.dt th,table.dt td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+table.dt th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+table.dt td.avail{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;white-space:nowrap}
+.av-have{color:var(--good)} .av-part{color:var(--warn)} .av-none{color:var(--bad)} .av-cur{color:var(--blue)}
+.rulegroups{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:11px;margin:8px 0}
+.rg{border:1px solid var(--border);border-radius:11px;padding:12px 13px;background:var(--surface)}
+.rg .rgt{display:flex;align-items:baseline;gap:8px}
+.rg .rgc{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--blue)}
+.rg .rgn{font-weight:600;font-size:13.5px}
+.rg .rgd{font-size:12.5px;color:var(--ink-2);margin-top:4px}
+.rulecard{border:1px solid var(--border);border-left:3px solid var(--blue-2);border-radius:9px;padding:10px 13px;margin:8px 0;background:var(--surface)}
+.rulecard .rh{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--ink)}
+.rulecard .rw{font-size:13px;margin:5px 0 0}
+.rulecard .rsrc{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3);margin-top:6px}
+.callout{border:1px dashed var(--t3);background:var(--t3-bg);border-radius:11px;padding:13px 15px;margin:14px 0}
+.callout .tag{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-weight:700}
+.callout p{margin:6px 0 0;font-size:13.5px}
+.foot{border-top:1px solid var(--border);margin-top:34px;padding-top:16px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);line-height:1.7;letter-spacing:.02em;text-transform:uppercase}
+
+/* ---------- Decision flow ---------- */
+.flowbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0 0}
+.flowbar .fp{border:1px solid var(--border);background:var(--surface-3);border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer}
+.flowbar .fp:hover{border-color:var(--border-strong)}
+.flowbar .fp[aria-pressed="true"]{border-color:var(--blue-2);background:var(--blue-tint);box-shadow:inset 0 0 0 1px var(--blue-2)}
+.flowbar .fp:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.flowgrid{display:grid;grid-template-columns:1.02fr .98fr;gap:16px;align-items:start;padding:12px 0 48px}
+@media(max-width:900px){.flowgrid{grid-template-columns:1fr}}
+.flowcol{display:flex;flex-direction:column;gap:16px}
+.flow,.flowswitch{display:flex;flex-direction:column;align-items:stretch;max-width:560px;margin:0 auto}
+.fnode{border:1.5px solid var(--border);background:var(--surface-2);border-radius:10px;padding:9px 13px;text-align:center;font-weight:600;font-size:12.5px;color:var(--ink-2)}
+.fnode.outcome.active{border-color:var(--gold);background:var(--gold-tint);color:var(--ink);box-shadow:0 0 0 1px var(--gold)}
+.fnode.outcome.faded{opacity:.4}
+.fdec{display:grid;grid-template-columns:1fr 44px minmax(118px,168px);align-items:center;overflow:visible}
+.fdec .qside{border:1.5px solid var(--border);background:var(--surface);border-radius:10px;padding:9px 12px}
+.fdec .q{font-weight:600;font-size:12.5px;line-height:1.3}
+.fdec .val{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-2);margin-top:3px;line-height:1.4}
+.fbranch{position:relative;height:24px;display:flex;align-items:center;justify-content:center}
+.fbranch .be{position:absolute;left:-3px;right:-3px;top:50%;height:2px;background:var(--border);transform:translateY(-50%)}
+.fbranch .fedge{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-family:"IBM Plex Mono",monospace;font-size:9px;font-weight:600;letter-spacing:.06em;color:var(--ink-3);padding:1px 5px}
+.yesnode{border:1.5px solid var(--border);background:var(--surface-3);border-radius:10px;padding:8px 11px;font-size:12px;font-weight:600;color:var(--ink-2);text-align:center;line-height:1.2;min-height:38px;display:flex;align-items:center;justify-content:center}
+.fdec.taken .qside{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.fdec.taken .fbranch .be{background:var(--gold)}
+.fdec.taken .fbranch .fedge{color:var(--gold-strong);border-color:var(--gold)}
+.fdec.taken .yesnode{border-color:var(--gold);background:var(--gold-tint);color:var(--ink);box-shadow:0 0 0 1px var(--gold)}
+.fdec.no .fbranch,.fdec.no .yesnode{opacity:.35}
+.fdec.faded{opacity:.4}
+/* ---------- Step-through walk ---------- */
+.wbtn{border:1px solid var(--border);background:var(--surface-3);color:var(--ink);font-size:12px;font-weight:600;padding:6px 11px;border-radius:8px;cursor:pointer}
+.wbtn:hover{border-color:var(--border-strong)}
+.wbtn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.wbtn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.wbtn.primary:hover{background:var(--blue-2)}
+.wbtn:disabled{opacity:.4;cursor:not-allowed}
+.walkbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding:8px 0 12px;border-bottom:1px solid var(--border);position:sticky;top:62px;z-index:6;background:var(--surface)}
+.walkcount{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);font-weight:600}
+.narrator{background:var(--gold-tint);border:1px solid var(--gold);border-radius:11px;padding:12px 14px;margin-bottom:14px}
+.narrator .nr-q{font-family:"Barlow Semi Condensed",sans-serif;font-weight:600;font-size:16px;color:var(--ink);line-height:1.25}
+.narrator .nr-t{font-size:13px;color:var(--ink-2);margin-top:5px;line-height:1.5}
+.flowstack.walk .fdec,.flowstack.walk .fnode.outcome,.flowstack.walk .switchchip{opacity:.13;transition:opacity .3s}
+.flowstack.walk .fconn-wrap{opacity:.3}
+.flowstack.walk .wseen{opacity:1 !important}
+.flowstack.walk .whern{opacity:1 !important;outline:3px solid var(--gold);outline-offset:3px;border-radius:12px}
+.col-out.masked{position:relative}
+.col-out.masked #output{filter:blur(6px);opacity:.45;pointer-events:none;user-select:none}
+.col-out.masked::after{content:"Step through the decision on the left. The result appears when the walk finishes.";position:absolute;top:70px;left:16px;right:16px;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);font-size:13.5px;font-weight:600;color:var(--ink-2);text-align:center;z-index:2}
+.fconn-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0}
+.fconn{width:2px;height:16px;background:var(--border)}
+.fconn-wrap.active .fconn{background:var(--gold)}
+.fconn-wrap.active .cl{color:var(--gold-strong)}
+.fconn-wrap.faded{opacity:.35}
+.fconn-wrap .cl{font-family:"IBM Plex Mono",monospace;font-size:9px;color:var(--ink-3);letter-spacing:.1em;font-weight:600}
+.switchchips{display:flex;flex-direction:column;gap:7px;margin-top:2px}
+.switchchip{border:1.5px solid var(--border);background:var(--surface-3);border-radius:9px;padding:8px 12px;font-size:12.5px;font-weight:600;color:var(--ink-2);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.switchchip.active{border-color:var(--gold);background:var(--gold-tint);color:var(--ink);box-shadow:0 0 0 1px var(--gold)}
+.switchchip .tag{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:var(--ink-3);font-weight:600;text-align:right}
+.switchchip.active .tag{color:var(--gold-strong)}
+
+/* ---------- Setup panel + Analyze CTA ---------- */
+.panel.setup{max-width:720px;margin:0 auto}
+.panel.setup .presets{flex-direction:row;flex-wrap:wrap}
+.panel.setup .preset{flex:1 1 200px}
+.cta{margin-top:18px;width:100%;border:0;background:var(--blue);color:#fff;font-size:15px;font-weight:600;padding:13px 20px;border-radius:11px;cursor:pointer;letter-spacing:.01em}
+.cta:hover{background:var(--blue-2)}
+.cta:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ---------- Attributes reminder bar ---------- */
+.summarybar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 15px;margin:14px 0 16px;box-shadow:var(--shadow-sm)}
+.sb-site{display:flex;align-items:center;gap:10px;min-width:0}
+.sb-ic{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12px;color:var(--blue);background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:5px 9px}
+.sb-title{font-weight:600;font-size:14px;line-height:1.2}
+.sb-attrs{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-2);margin-top:2px;line-height:1.4}
+.sb-verdict{display:flex;align-items:center;gap:7px;margin-left:auto}
+.sb-verdict .rn{font-family:"Barlow Semi Condensed",sans-serif;font-weight:600;font-size:15px}
+.sb-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sb-actions .sw{margin:0}
+.sb-btn{border:1px solid var(--border);background:var(--surface-3);color:var(--ink);font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:9px;cursor:pointer}
+.sb-btn:hover{border-color:var(--border-strong)}
+.sb-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.sb-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* ---------- Results two-column ---------- */
+.resultcols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;align-items:start;padding-bottom:48px}
+@media(max-width:1000px){.resultcols{grid-template-columns:1fr}}
+.flowstack{display:flex;flex-direction:column;gap:18px}
+.flowblock .fblabel{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:8px}
+.rulelog{margin-top:16px;border-top:1px solid var(--border);padding-top:8px}
+.rulelog summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-2);list-style:none}
+.rulelog summary::-webkit-details-marker{display:none}
+.rulelog summary::before{content:"\25B8  ";color:var(--ink-3)}
+.rulelog[open] summary::before{content:"\25BE  "}
+.rulelog-b{margin-top:8px;border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.rulelog-b .trace-meta{display:block;padding:8px 14px 0}
+
+/* ---------- Low / Medium / High meters (Step 3) ---------- */
+.meters{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px 16px 4px}
+@media(max-width:560px){.meters{grid-template-columns:1fr}}
+.meter{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-3)}
+.m-h{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);font-weight:600;margin-bottom:9px}
+.m-scale{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-bottom:10px}
+.mseg{font-family:"IBM Plex Mono",monospace;font-size:8.5px;text-align:center;padding:5px 1px;border-radius:5px;background:var(--surface-2);color:var(--ink-3);border:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mseg.on{color:#fff;border-color:transparent}
+.mseg.act{outline:2px solid var(--ink);outline-offset:1px}
+.mseg.lc0.on{background:#2f9e7d}.mseg.lc1.on{background:#7ba03e}.mseg.lc2.on{background:#c79200}.mseg.lc3.on{background:#d9722b}.mseg.lc4.on{background:#c1352a}
+.m-level{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:27px;line-height:1}
+.m-level.lc0{color:#2f9e7d}.m-level.lc1{color:#6f9438}.m-level.lc2{color:#b98600}.m-level.lc3{color:#d9722b}.m-level.lc4{color:#c1352a}.m-level.lvl-unc{color:var(--ink-2)}
+.m-note{font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.45}
+.m-tier{font-size:10.5px;color:var(--ink-3);margin-top:9px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tb-screen{color:var(--ink-2);border-color:var(--border-strong);background:var(--surface-2)}
+.verdict-plain{display:flex;gap:11px;align-items:flex-start;padding:16px 16px 8px}
+.verdict-plain .vp-ic{color:var(--gold-strong);font-size:13px;margin-top:4px}
+.verdict-plain p{margin:0;font-family:"Barlow Semi Condensed",sans-serif;font-weight:600;font-size:18px;line-height:1.32;color:var(--ink);text-wrap:balance}
+.provkey{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 16px 12px;font-size:11px;color:var(--ink-3)}
+.provkey>span:first-child{font-weight:600;color:var(--ink-2)}
+.provkey .pk-sep{font-style:italic;color:var(--ink-3)}
+.forklist{margin:9px 0 5px;display:flex;flex-direction:column;gap:5px}
+.forkrow{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--border);border-radius:8px;padding:6px 9px;background:var(--surface-3)}
+.forkrow .fk-n{font-size:12px;font-weight:600;color:var(--ink)}
+.forkrow .fk-v{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-2);text-align:right}
+.meters.one{grid-template-columns:1fr}
+.meters.one .meter{background:var(--surface)}
+.whycompare{margin:4px 16px 6px;border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-3)}
+.whyhdr{font-size:11.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);font-weight:600;margin-bottom:11px}
+.whycols{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}
+@media(max-width:520px){.whycols{grid-template-columns:1fr;gap:8px}.whyvs{display:none}}
+.whycard{border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface)}
+.whycard .wc-h{font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:6px}
+.whycard .wc-big{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:30px;line-height:1;color:var(--ink)}
+.whycard .wc-big.sm{font-size:20px}
+.whycard .wc-cat{font-size:12.5px;color:var(--ink-2);font-weight:600;margin-top:3px}
+.whycard .wc-sub{font-size:11.5px;color:var(--ink-2);margin-top:7px;line-height:1.45}
+.whycard .wc-tier{margin-top:9px;font-size:10.5px;color:var(--ink-3);display:flex;align-items:center;gap:5px}
+.whyvs{align-self:center;font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.08em}
+.whynote{font-size:11.5px;color:var(--ink-2);margin-top:11px;line-height:1.5;padding-top:10px;border-top:1px solid var(--border)}
+.mapcard{margin:4px 16px 6px;border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface)}
+#stressMap{height:300px;width:100%;border-radius:8px;border:1px solid var(--border);margin-top:9px;background:var(--surface-2);z-index:0}
+.leaflet-container{font-family:inherit;background:var(--surface-2)}
+.leaflet-container a{color:var(--blue-link)}
+.minetip{background:#fff !important;color:#111 !important;border:1px solid #333 !important;border-radius:6px;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;padding:1px 6px;box-shadow:none !important}
+.minetip::before{display:none !important}
+.mapfallback{display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-3);font-size:12.5px;padding:16px;text-align:center}
+.maplegend{display:flex;align-items:center;gap:5px;margin-top:9px;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-3)}
+.maplegend .lg{width:26px;height:10px;border-radius:2px;display:inline-block}
+.maplegend .lg0{background:#2f9e7d}.maplegend .lg1{background:#7ba03e}.maplegend .lg2{background:#c79200}.maplegend .lg3{background:#d9722b}.maplegend .lg4{background:#c1352a}
+.mapcap{font-size:11.5px;color:var(--ink-2);margin-top:9px;line-height:1.45}
+.mapsrc{font-size:10.5px;color:var(--ink-3);margin-top:4px}
+.readnote{font-size:11.5px;color:var(--ink-3);padding:0 16px 8px;line-height:1.45}
+details.fullread{margin:6px 16px 16px;border:1px solid var(--border);border-radius:10px}
+details.fullread > summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink);list-style:none;padding:11px 14px}
+details.fullread > summary::-webkit-details-marker{display:none}
+details.fullread > summary::before{content:"\25B8  ";color:var(--ink-3)}
+details.fullread[open] > summary::before{content:"\25BE  "}
+details.fullread .fr-body{border-top:1px solid var(--border)}
+
+/* ---------- Flow reveal animation ---------- */
+.fa{opacity:0}
+@media (prefers-reduced-motion:no-preference){
+  .fa{animation:frise .42s ease forwards}
+}
+@media (prefers-reduced-motion:reduce){.fa{opacity:1}}
+@keyframes frise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- Onboarding overlay ---------- */
+.overlay{position:fixed;inset:0;z-index:60;background:rgba(20,28,44,.5);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:22px}
+.overlay[hidden]{display:none}
+.ob-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);max-width:520px;width:100%;padding:26px 26px 22px}
+.ob-eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-strong);font-weight:600}
+.ob-card h2{font-size:23px;margin:6px 0 8px}
+.ob-card > p{color:var(--ink-2);font-size:14px;margin:0 0 16px;max-width:60ch}
+.ob-steps{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:11px}
+.ob-steps li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;font-size:13.5px;line-height:1.5}
+.ob-steps .num{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:17px;color:#fff;background:var(--blue-2);width:28px;height:28px;border-radius:8px;display:grid;place-items:center}
+.ob-steps b{font-weight:600}
+.ob-aq5{background:var(--t3-bg);border:1px dashed var(--t3);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--ink);margin:0 0 18px;line-height:1.5}
+.ob-btn{border:0;background:var(--blue);color:#fff;font-size:14px;font-weight:600;padding:11px 20px;border-radius:10px;cursor:pointer;width:100%}
+.ob-btn:hover{background:var(--blue-2)}
+.ob-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.hidden{display:none}
+[hidden]{display:none !important}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <span class="kick">WRI Responsible Mining Data Platform</span>
+      <h1>Water-Risk Glass Box<span class="dot">.</span></h1>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" id="tab-model" role="tab" aria-selected="true" aria-controls="view-model">The model</button>
+      <button class="tab" id="tab-method" role="tab" aria-selected="false" aria-controls="view-method">Methodology and rules</button>
+    </div>
+    <button class="icon-btn" id="helpBtn" title="How to use this">? How to use</button>
+    <button class="icon-btn" id="themeBtn" title="Switch light or dark" aria-label="Switch light or dark">Dark</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ MODEL VIEW ============ -->
+  <section id="view-model" role="tabpanel" aria-labelledby="tab-model">
+
+    <!-- SETUP (Step 1) -->
+    <div id="setupWrap">
+      <div class="thesis">
+        <div class="lead">A water-risk model you can see inside.</div>
+        <p>Choose a site. Press Analyze. The model walks its decision to a plain result. <button class="helplink" id="thesisHelp">How to use this</button></p>
+      </div>
+      <div class="panel setup">
+        <div class="panel-h"><span class="n">Step 1</span><h2>Choose a site to analyze</h2></div>
+        <div class="panel-b">
+          <div class="instr">Select an example, or edit any input. Then press <b>Analyze</b>. The model walks its decision. It shows a plain result.</div>
+          <div class="presets" id="presets"></div>
+          <div id="controls"></div>
+          <div class="aq5box">
+            <label class="sw"><input type="checkbox" id="aq5"><span class="track"></span><span class="sw-l">Aqueduct 5.0 data layer<small>Hypothetical future data</small></span></label>
+            <div class="hint"><span class="tag">Hypothetical</span> This is a future data layer. It uses the same rules with better inputs. It shows how the read gets sharper when finer water data arrives. It never replaces operator disclosure or a ground sample.</div>
+          </div>
+          <button class="cta" id="analyzeBtn">Analyze this site</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS: attributes reminder + Step 2 flow + Step 3 result -->
+    <div id="resultsWrap" hidden>
+      <div class="summarybar" id="summaryBar"></div>
+      <div class="resultcols">
+        <section class="panel">
+          <div class="panel-h"><span class="n">Step 2</span><h2>How the model decides</h2><span class="spacer"></span><button class="wbtn" id="walkToggle">Step through &#9654;</button></div>
+          <div class="panel-b">
+            <div class="walkbar" id="walkbar" hidden>
+              <button class="wbtn" id="wRestart" title="Restart">&#8635;</button>
+              <button class="wbtn" id="wPrev">&#9664; Back</button>
+              <button class="wbtn primary" id="wNext">Next &#9654;</button>
+              <button class="wbtn" id="wPlay">Auto-play</button>
+              <span class="walkcount" id="walkcount"></span>
+              <span class="spacer"></span>
+              <button class="wbtn" id="wExit">Exit</button>
+            </div>
+            <div class="narrator" id="narrator" hidden></div>
+            <div class="flowstack">
+              <div class="flowblock"><div class="fblabel">Branch 1 &middot; Which water-risk regime?</div><div class="flow" id="flowRegime"></div></div>
+              <div class="flowblock"><div class="fblabel">Branch 2 &middot; How sure is the water-use figure?</div><div class="flow" id="flowDemand"></div></div>
+              <div class="flowblock"><div class="fblabel">Branch 3 &middot; Which contaminant watchlist?</div><div class="flowswitch" id="flowWatch"></div></div>
+            </div>
+            <details class="rulelog"><summary>Show the full rule log</summary><div class="rulelog-b"><span class="trace-meta" id="traceMeta"></span><div class="trace-list" id="trace"></div></div></details>
+          </div>
+        </section>
+        <section class="panel col-out">
+          <div class="panel-h"><span class="n">Step 3</span><h2>The result</h2></div>
+          <div id="output"></div>
+        </section>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ METHODOLOGY VIEW ============ -->
+  <section id="view-method" role="tabpanel" aria-labelledby="tab-method" class="hidden" hidden>
+    <div class="doc">
+      <span class="eyebrow">Read spine, version 0.1</span>
+      <h2>What this model does, and does not do</h2>
+      <p>The model answers one question for a mine site. What water risk can the tool describe from the data we have today, and what can it not describe? The model gives a tiered read in three panels. Panel A is pressure. It is what the mine takes or adds. Panel B is condition. It is the state of the basin. Panel C is change. It is what changed since operations began. The panels sit side by side. The model never divides one panel into another. It never gives one blended score.</p>
+      <p>The model does not compute cause. It cannot say that this mine caused this change. It is built not to. Basin data mixes many users and the climate across a sub-basin. In a belt with many smelters, contamination has many possible sources. So the read stops at timing (the first step of the ladder above). It then states what evidence you need to go further. This boundary is the point. It is not a weakness. The December 2025 WALHI case was won the same way. It used independent measurements next to context, not a model attribution number.</p>
+
+      <h2>The water-stress result (basin status next to mine pressure)</h2>
+      <p class="muted">The result starts with one plain level, from Low to Very High. A non-specialist can read it fast. To show why, the tool puts the basin status next to the water that a mine like this uses. The tool shows the two side by side. It never divides one into the other. To divide them would make a "share of basin stress" claim. The method bans this claim, because no method can defend it.</p>
+      <p><b>Water stress (basin)</b> is the Aqueduct 4.0 baseline water-stress class for the sub-basin. The tool shows it as a level (Low under 10 percent, Low-Medium 10 to 20, Medium-High 20 to 40, High 40 to 80, Extremely High over 80). It also shows the 2030 and 2050 projections. This is a published, modelled value. The basin can sit near a class edge, or a dry-season flag can be set. In both cases the level shows that caveat. It does not hide it.</p>
+      <p><b>A mine like this would draw</b> is the Panel A pressure. It is the water that a mine of this process type uses. The tool shows it as a measured, permitted, or estimated figure, by tier. It sits next to the basin, so you can see the pressure. The tool never combines it with the basin.</p>
+      <p class="muted">The tool defers the water-quality hazard for now. The chemical watchlist for the process type is still in the full technical read.</p>
+
+      <h2>How sure are we? (the label on every value)</h2>
+      <p class="muted">Every number the tool shows carries a plain label for how sure we are of it, from most sure to least sure: Measured, then From a permit, then Modelled, then Our estimate, then No data. The label is honest about where the value came from. It is separate from which panel the value sits in.</p>
+      <div class="tierlegend" id="tierLegend"></div>
+
+      <h2>How far can it go on "did the mine cause this?"</h2>
+      <p class="muted">Any statement about change sits on a four-step ladder. Each step needs stronger evidence than the last. This tool only ever uses step 1 (timing). The higher steps are shown so you can see the honest boundary, and what it would take to go further.</p>
+      <div class="ladder" id="ladder"></div>
+
+      <h2>The rules</h2>
+      <p class="muted">The model is 69 rules in eight groups, plus eight forward-looking rules for the Aqueduct 5.0 layer. Every rule cites a source section or a named strawman parameter. Rules run in order: classify, then demand, then condition, then watchlist, then the gap line. Tier, ladder, and banned-construction rules govern every output.</p>
+      <div class="rulegroups" id="ruleGroups"></div>
+      <h3>A few rules in full</h3>
+      <div id="sampleRules"></div>
+
+      <h2>What data exists today</h2>
+      <p class="muted">This shows coverage of the 8,508 mines on the registry. The model is strongest where the data is global and point-based. It is weakest where the harm concentrates. Local water quality is near zero from orbit. This is why the read uses tiers and the gap line.</p>
+      <div style="overflow-x:auto">
+      <table class="dt">
+        <thead><tr><th>Data layer</th><th>Coverage</th><th>Availability</th><th>What it enables</th></tr></thead>
+        <tbody id="coverageRows"></tbody>
+      </table>
+      </div>
+
+      <h2>The Aqueduct 5.0 layer</h2>
+      <div class="callout">
+        <span class="tag">Forward-looking and hypothetical</span>
+        <p>Aqueduct 5.0 is not released. In this tool it is a demo device. It shows how the same rules get sharper when finer water data arrives. No rule changes. Only the inputs get better. The seasonal screen changes from "not assessed" to a real dry-season class. A published error band replaces the judgment buffer. The demand-vintage flag clears where the basin model includes the local industry. The groundwater "no data" cells get a class.</p>
+        <p>Here is the honest point. Panel A barely moves. A basin dataset does not know how much water a mine takes. The license request and the ground sample stay the main gaps. The gap line gets shorter. But it never goes away.</p>
+      </div>
+
+      <h2>Banned constructions</h2>
+      <p class="muted">Twelve constructions are blocked at render. Every site read passes all twelve before it displays.</p>
+      <div id="bannedList"></div>
+
+      <div class="foot">
+        Water-Risk Screening Ruleset v0.1 · Read spine · Derived from X1 attribution stance, M1 quality screen, M2 quantity and stress, strawman parameters, and the data coverage funnel<br>
+        Numeric thresholds are strawman values, shown to be attacked, not defaults to trust · Preset basin values are illustrative, not measurements of named sites · For internal and funder use
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ Onboarding ============ -->
+<div class="overlay" id="onboard" role="dialog" aria-modal="true" aria-labelledby="obTitle" hidden>
+  <div class="ob-card">
+    <span class="ob-eyebrow">How to use this</span>
+    <h2 id="obTitle">A water-risk model you can see inside</h2>
+    <p>This tool shows how we screen the water risk of a mine site. It uses the data that is available today. It is a screening model. It is not a verdict. It never says that one mine caused a change.</p>
+    <ol class="ob-steps">
+      <li><span class="num">1</span><span><b>Choose a site.</b> Select one of the three example mines. Or edit any input to build your own. Then press Analyze.</span></li>
+      <li><span class="num">2</span><span><b>Watch it decide.</b> The decision flow shows the path that the model takes. It moves branch by branch. It shows why the model makes each choice.</span></li>
+      <li><span class="num">3</span><span><b>Read the result.</b> You get a plain water-stress level, from Low to High. The basin status appears next to the water that a mine like this uses. The result also shows the one gap that stays. To see more, open the full technical read.</span></li>
+    </ol>
+    <p class="ob-aq5"><b>Tip:</b> turn on the <b>Aqueduct 5.0</b> control. It shows how the same model gets sharper when the water data improves. To read the full method, open the <b>Methodology and rules</b> tab.</p>
+    <button class="ob-btn" id="obClose">Start exploring</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* Water-Risk Glass Box: deterministic rule engine + UI. Read-spine ruleset v0.1.
+   Copy is Simplified Technical English. No em dashes in rendered copy. */
+
+var TIERS={
+  T1:{label:"Measured",cls:"tb-T1",desc:"A real measurement of this site or its water: a lab result, a gauge, a metered figure. The most certain."},
+  T1p:{label:"From a permit",cls:"tb-T1p",desc:"A figure from a permit. What the operator is allowed to take, not what it actually takes."},
+  T2:{label:"Modelled",cls:"tb-T2",desc:"A value from a published computer model for this location, such as the Aqueduct water model. Not measured here."},
+  T3:{label:"Our estimate",cls:"tb-T3",desc:"An estimate we worked out from typical figures for this process. Always a range, never a single number."},
+  T4:{label:"No data",cls:"tb-T4",desc:"No public value exists. The tool shows the gap rather than hiding it, and says how to close it."}
+};
+var EV={regulatory:{t:"Regulation",c:"ev-reg"},"peer-reviewed":{t:"Study",c:"ev-peer"},"NGO-field":{t:"Field report",c:"ev-ngo"},preprint:{t:"Early study",c:"ev-pre"},process:{t:"Process",c:"ev-pre"}};
+
+var LATERITE_BASE=[
+  {n:"Cr(VI)",ev:"peer-reviewed",comp:"residue porewater, discharge, runoff",cite:"Delina et al. 2025 (ES&T); Obi field case, Gecko/OCCRP 2023"},
+  {n:"Ni",ev:"regulatory",comp:"discharge",cite:"EPA 440 Subpart G (nickel ore)"},
+  {n:"Co",ev:"NGO-field",comp:"discharge",cite:"process metal; Obi field case, Gecko/OCCRP 2023"},
+  {n:"Mn",ev:"NGO-field",comp:"discharge",cite:"process metal; Obi field case, Gecko/OCCRP 2023"},
+  {n:"Sulfate / TDS",ev:"process",comp:"discharge",cite:"acid-leach and neutralisation chemistry; not site-measured"},
+  {n:"Mg",ev:"process",comp:"discharge",cite:"leaching of the laterite matrix; not site-measured"},
+  {n:"Turbidity / TSS",ev:"regulatory",comp:"runoff",cite:"EPA 440 Subpart G (TSS); land disturbance"},
+  {n:"pH (process acidity)",ev:"regulatory",comp:"discharge",cite:"EPA 440 Subpart G; MDMER; PP 22/2021"}
+];
+var RKEF_ADD=[
+  {n:"Hg",ev:"NGO-field",comp:"coal-combustion pathway",cite:"Nexus3 + Untad 2025 blood study (IWIP, same RKEF + captive-coal process)"},
+  {n:"As",ev:"NGO-field",comp:"coal-combustion pathway",cite:"Nexus3 + Untad 2025 (IWIP, same process)"},
+  {n:"Se",ev:"process",comp:"coal-ash pathway",cite:"coal-ash pathway, general literature; not site-measured"}
+];
+var FLOOR=[{n:"As, Cu, Pb, Ni, Zn, TSS, pH, nitrate / ammonia",ev:"regulatory",comp:"regulatory monitoring baseline",cite:"EPA 440 (Subpart G nickel / J copper) + Canada MDMER; nitrogen from blasting"}];
+
+/* Baseline water stress, flood risk, variability, and 2030/2050 projections are REAL
+   Aqueduct 4.0 sub-basin values (HydroBASINS L6, pfaf_id), read point-in-polygon from the
+   Esri Living Atlas mirror of WRI Aqueduct 4.0 (baseline + future annual layers).
+   Kuzma et al. 2023. Capacity, process, and AWARE are representative. */
+var PRESETS=[
+  {id:"hpal",ic:"A",title:"Indonesian HPAL nickel",sub:"Obi Island, North Maluku. Laterite, coastal, marine receptor.",
+   s:{commodity:"Ni",ore_type:"laterite",process:"HPAL",captive_coal:false,status:"operating",vintage:2021,
+      waste_mgmt:"dam",receptor:"marine",national_std:true,capacity:60000,
+      licensed:false,metered:false,measured:false,
+      bws:0.3,rfr:"Extremely High",gtd:"Low",aware_on:false,aware_cf:3,cluster_known:false,
+      y2030r:0.3,y2050r:0.3,rfrLabel:"Extremely High",sevLabel:"Low",iavLabel:"Medium-High",gtdLabel:"insignificant trend",
+      pfaf:"533000",aqsrc:"Obi Island sub-basin, pfaf 533000, Maluku Utara",aqres:"sub-basin, HydroBASINS L6",lat:-1.5614,lon:127.4210},
+   aq5:{driest:5,gtd:"Low"}},
+  {id:"rkef",ic:"B",title:"Indonesian RKEF nickel",sub:"Morowali (IMIP), Central Sulawesi. Laterite, captive coal.",
+   s:{commodity:"Ni",ore_type:"laterite",process:"RKEF",captive_coal:true,status:"operating",vintage:2019,
+      waste_mgmt:"dry_stack",receptor:"marine",national_std:true,capacity:30000,
+      licensed:false,metered:false,measured:false,
+      bws:6.5,rfr:"Extremely High",gtd:"Low",aware_on:false,aware_cf:3,cluster_known:false,
+      y2030r:6.3,y2050r:6,rfrLabel:"Extremely High",sevLabel:"Low",iavLabel:"Low-Medium",gtdLabel:"insignificant trend",
+      pfaf:"525015",aqsrc:"Morowali sub-basin, pfaf 525015, Sulawesi Tengah",aqres:"sub-basin, HydroBASINS L6",lat:-2.83,lon:122.16},
+   aq5:{driest:9,gtd:"Low"}},
+  {id:"drc",ic:"C",title:"DRC copper-cobalt",sub:"Tenke Fungurume, Lualaba. Sulfide, ARD, freshwater river.",
+   s:{commodity:"Cu-Co",ore_type:"sulfide",process:"sulfide_flotation",captive_coal:false,status:"operating",vintage:2015,
+      waste_mgmt:"dam",receptor:"freshwater",national_std:false,capacity:40000,
+      licensed:false,metered:false,measured:false,
+      bws:0.03,rfr:"Medium",gtd:"Low",aware_on:false,aware_cf:12,cluster_known:false,
+      y2030r:0.2,y2050r:0.4,rfrLabel:"Medium-High",sevLabel:"Medium-High",iavLabel:"Low-Medium",gtdLabel:"insignificant trend",
+      pfaf:"132946",aqsrc:"Tenke Fungurume sub-basin, pfaf 132946, Lualaba",aqres:"sub-basin, HydroBASINS L6",lat:-10.5684,lon:26.1956},
+   aq5:{driest:8,gtd:"Low"}},
+  {id:"prospect",ic:"D",title:"Early nickel prospect",sub:"Data gap: process and water use unknown. Representative basin.",
+   s:{commodity:"Ni",ore_type:"laterite",process:"unknown",captive_coal:false,status:"proposed",vintage:2024,
+      waste_mgmt:"unknown",receptor:"freshwater",national_std:false,capacity:0,
+      licensed:false,metered:false,measured:false,
+      bws:12,rfr:"Medium",gtd:"no_data",aware_on:false,aware_cf:3,cluster_known:false,
+      rfrLabel:"Medium",lat:-2.6,lon:121.4},
+   aq5:{driest:20,gtd:"Low"}},
+  {id:"partial",ic:"E",title:"Operating mine, water use undisclosed",sub:"Data gap: process known, but no capacity and no license.",
+   s:{commodity:"Ni",ore_type:"laterite",process:"RKEF",captive_coal:true,status:"operating",vintage:2020,
+      waste_mgmt:"dry_stack",receptor:"marine",national_std:true,capacity:0,
+      licensed:false,metered:false,measured:false,
+      bws:6.5,rfr:"Extremely High",gtd:"Low",aware_on:false,aware_cf:3,cluster_known:false,
+      y2030r:6.3,y2050r:6,rfrLabel:"Extremely High",sevLabel:"Low",iavLabel:"Low-Medium",
+      pfaf:"525015",aqsrc:"Morowali sub-basin, pfaf 525015, Sulawesi Tengah",aqres:"sub-basin, HydroBASINS L6",lat:-2.83,lon:122.16},
+   aq5:{driest:9,gtd:"Low"}}
+];
+
+function coeff(commodity,process){
+  if(commodity==="Ni"&&process==="HPAL") return {lo:1200,hi:2200,label:"HPAL, roughly 1,200 to 2,200 m3 per t Ni"};
+  if(commodity==="Ni"&&process==="RKEF") return {lo:60,hi:150,label:"RKEF, roughly 60 to 150 m3 per t Ni"};
+  return null;
+}
+function classOfBws(b){if(b<10)return"Low";if(b<20)return"Low-Medium";if(b<40)return"Medium-High";if(b<=80)return"High";return"Extremely High";}
+function receptorWord(r){return r==="marine"?"the coastal water that this community uses":r==="groundwater"?"the groundwater that this community uses":"the river that this community uses";}
+function oom(v){var e=Math.floor(Math.log10(v));var m=(v/Math.pow(10,e)).toFixed(1);return{m:m,e:e};}
+function fmtBand(lo,hi,cap){var a=oom(lo*cap),b=oom(hi*cap);if(a.e===b.e)return a.m+" to "+b.m+" x 10^"+a.e+" m3/yr";return a.m+" x 10^"+a.e+" to "+b.m+" x 10^"+b.e+" m3/yr";}
+
+/* ---------- ENGINE ---------- */
+function runEngine(s,aq5){
+  var trace=[];
+  function log(id,fired,because,emitted){trace.push({id:id,fired:fired,because:because,emitted:emitted});}
+  var out={trace:trace};
+
+  var sevMult={"Low":1.3,"Medium":1.8,"High":2.5,"Extremely High":3.2};
+  var driest=null, awareCf=(s.aware_on?s.aware_cf:null), bufferHalf=10, gtd=s.gtd, vintageResolved=false;
+  if(aq5){
+    driest=(s._presetAq5&&!s._edited&&typeof s._presetAq5.driest==="number")?s._presetAq5.driest:null;
+    awareCf=(s._presetAq5&&!s._edited&&typeof s._presetAq5.aware_cf==="number")?s._presetAq5.aware_cf:awareCf;
+    bufferHalf=3;
+    vintageResolved=true;
+  }
+
+  var scarcityCand=s.bws>=40;
+  log("R-CLASS-01",scarcityCand,"bws "+s.bws+"% "+(scarcityCand?"is at or above":"is below")+" the 40% High-class edge",scarcityCand?"scarcity candidate":null);
+
+  var seasonalFlag=false, seasonalStatus;
+  var routeA=(driest!==null&&driest>=40), routeB=(awareCf!==null&&awareCf>=10);
+  if(routeA||routeB){seasonalFlag=true;seasonalStatus="assessed";}
+  else if(driest===null&&awareCf===null){seasonalStatus="unassessed";}
+  else {seasonalStatus="assessed";}
+  var seasBc=(driest!==null?("driest-quarter "+driest+"% "):("driest-quarter not run "))+(awareCf!==null?("and worst-month AWARE CF "+awareCf):("and AWARE not run"));
+  log("R-CLASS-02",seasonalFlag,seasBc,seasonalFlag?"secondary flag: seasonal scarcity":(seasonalStatus==="unassessed"?"seasonal status: not assessed (T4)":"seasonal screen clear"));
+
+  var inBuffer=false, bufBc="";
+  var edges=[40,20];
+  for(var i=0;i<edges.length;i++){if(Math.abs(s.bws-edges[i])<=bufferHalf){inBuffer=true;bufBc="bws "+s.bws+"% is within "+bufferHalf+" points of the "+edges[i]+"% class edge";}}
+  if(!inBuffer) bufBc="bws "+s.bws+"% is clear of every class edge by more than "+bufferHalf+" points";
+  log("R-CLASS-04",inBuffer,bufBc,inBuffer?"regime: mixed or indeterminate":null);
+
+  var floodHigh=(s.rfr==="High"||s.rfr==="Extremely High");
+  var disrupt=floodHigh&&s.bws<20&&!seasonalFlag;
+  var regime,provisional=false;
+  if(inBuffer){regime="mixed or indeterminate";}
+  else if(scarcityCand){regime="scarcity-dominant";}
+  else if(disrupt){regime="disruption-dominant";provisional=(seasonalStatus==="unassessed");}
+  else if(seasonalFlag){regime="seasonal scarcity (secondary)";}
+  else regime="no dominant regime asserted";
+  var disruptBc="rfr is "+s.rfr+", bws "+s.bws+"%"+(seasonalFlag?", seasonal flag set":(seasonalStatus==="unassessed"?", seasonal screen pending":""));
+  log("R-CLASS-03",regime==="disruption-dominant",disruptBc,regime==="disruption-dominant"?("regime: disruption-dominant"+(provisional?" (provisional)":"")):null);
+
+  var vintageState=s.cluster_known?"reliable":(vintageResolved?"reliable":"unassessed");
+  log("R-CLASS-05",false,(vintageResolved?"Aqueduct 5.0 basin model includes the local industrial cluster":"cluster demand is not known"),"demand-vintage: "+vintageState+(vintageState==="unassessed"?" (T4 flag rendered)":""));
+
+  log("R-CLASS-08",true,"the watchlist has commodity rows beyond the regulatory floor","secondary flag: quality watch (from the site side)");
+
+  var confidence;
+  if(inBuffer) confidence="LOW";
+  else if(provisional||seasonalStatus==="unassessed"||vintageState==="unassessed") confidence="MED";
+  else if(regime==="seasonal scarcity (secondary)"||regime==="no dominant regime asserted") confidence="MED";
+  else confidence="HIGH";
+  log("R-CLASS-10",true,"path: "+regime+(provisional?", provisional":"")+", buffer "+(inBuffer?"yes":"no"),"classifier confidence: "+confidence);
+
+  var secondaryFlags=[];
+  if(seasonalFlag)secondaryFlags.push({t:"seasonal scarcity",warn:true});
+  if(vintageState==="unassessed")secondaryFlags.push({t:"vintage not assessed",warn:true});
+  if(regime==="disruption-dominant"&&provisional)secondaryFlags.push({t:"seasonal screen pending",warn:true});
+  secondaryFlags.push({t:"quality watch",warn:false});
+  out.regime={label:regime,provisional:provisional,confidence:confidence,flags:secondaryFlags,seasonalStatus:seasonalStatus};
+
+  var A={};
+  if(s.metered){
+    A={tier:"T1",statement:"This mine uses a metered volume of water (a real measured figure for this operation).",figure:"Metered",short:"measured for this operation"};
+    log("R-DEMAND-01",true,"a metered withdrawal figure exists","Panel A: T1 measured");
+  } else {
+    log("R-DEMAND-01",false,"no metered figure exists",null);
+    if(s.licensed){
+      A={tier:"T1p",statement:"This mine is licensed to withdraw a permitted volume of water. This reflects the permit, not measured use. Permitted is not the same as enforced.",figure:"Licensed",short:"permit figure, not metered"};
+      log("R-DEMAND-02",true,"a water-abstraction license figure exists","Panel A: T1p permitted");
+    } else {
+      log("R-DEMAND-02",false,"no license figure (portal blocked, request needed from WRI Indonesia)",null);
+      var c=coeff(s.commodity,s.process);
+      if(c&&s.capacity){
+        A={tier:"T3",statement:"Estimated at "+fmtBand(c.lo,c.hi,s.capacity)+".",band:c.label,grade:"ore-grade assumption 1.0 to 1.8% Ni, carried in the band",split:true,figure:fmtBand(c.lo,c.hi,s.capacity),short:c.label,reasonShort:"estimated band",sourceCite:"Northey and Haque 2013 (CSIRO)",sourceNote:"This is a total blue-water footprint (on-site plus supply chain), from Northey and Haque 2013 (CSIRO). The central figure is about 1,700 m3 per t Ni for HPAL and about 100 for RKEF. It does not count once-through cooling or seawater, which are site-specific and can be higher."};
+        log("R-DEMAND-03",true,"process "+s.process+" confirmed, capacity "+s.capacity.toLocaleString()+" t/yr","Panel A: T3 band ("+c.label+"), not a point");
+        log("R-DEMAND-04",true,"coefficient sourced from Northey and Haque 2013 (CSIRO)","flag: blue-water footprint, direct plus embodied. HPAL about 1,700, RKEF about 100 m3 per t Ni");
+      } else if(s.process==="unknown"&&s.ore_type==="laterite"&&s.commodity==="Ni"){
+        A={tier:"T4",statement:"The tool will not print one typical figure. The two candidate processes for a nickel laterite differ by roughly 17 times, wider than the 10-times limit an estimate may span.",
+           fork:[{name:"If built as HPAL",fig:"roughly 1,200 to 2,200 m3 per t Ni"},{name:"If built as RKEF",fig:"roughly 60 to 150 m3 per t Ni"}],
+           forkNote:"Each is a process-type water footprint from Northey and Haque 2013 (CSIRO), not this site. Which process is chosen is the single largest water decision for this project.",
+           route:"M4",figure:"Not one figure",short:"process not confirmed",reasonShort:"candidate band too wide (17x), refused"};
+        log("R-DEMAND-05",true,"process unknown: the candidate-process band spans about 17x, wider than the 10x limit","Panel A: T4. The tool shows the fork (if HPAL / if RKEF), never one merged number");
+      } else if(c&&!s.capacity){
+        A={tier:"T4",statement:"The production capacity is not public, so the tool cannot scale the per-tonne water use into an annual figure.",
+           intensity:c.label,route:"M4",figure:"Per tonne only",short:"capacity unknown",reasonShort:"capacity unknown"};
+        log("R-DEMAND-06",true,"process known ("+s.process+"), but capacity is not public","Panel A: T4. The tool shows the per-tonne intensity and asks for the capacity");
+      } else {
+        A={tier:"T4",statement:"No public figure exists for the water use of this operation. No license figure is available, and version 0.1 has no water-use coefficient set for this commodity and process.",route:"M4",figure:"Not public",short:"no coefficient for this commodity and process",reasonShort:"no coefficient for this commodity"};
+        log("R-DEMAND-06",true,"no coefficient set exists for "+s.commodity+" "+s.process,"Panel A: T4, routed to a disclosure request (M4)");
+      }
+    }
+  }
+  out.A=A;
+
+  out.B={
+    bwsClass:classOfBws(s.bws),bws:s.bws,rfr:s.rfr,gtd:gtd,
+    seasonalCaveat:(s.bws<20)?("On an annual basis this basin is not short of water (baseline stress "+classOfBws(s.bws)+", "+s.bws+"%). But an annual average can hide a dry-season shortage. "+(seasonalStatus==="unassessed"?"The tool has not assessed the dry-season conditions.":seasonalFlag?"A seasonal-scarcity flag is set.":"The dry-season screen is clear.")):null,
+    vintageFlag:(vintageState==="unassessed")?"The tool has not assessed the demand vintage. The basin model may be older than the local industry.":(vintageResolved?"The tool has resolved the demand vintage. The basin model now includes the local industry.":null),
+    regime:regime,provisional:provisional
+  };
+  log("R-COND-03",s.bws<20,"annual baseline stress is "+classOfBws(s.bws),"Panel B: annual-basis sentence with the seasonal caveat, no negative asserted");
+  log("R-COND-04",true,"groundwater trend is "+(gtd==="no_data"?"not covered":gtd),"Panel B: groundwater rendered as its own line"+(gtd==="no_data"?" (no data, T4)":" (T2)"));
+
+  out.C={vintage:s.vintage,tier:"C0",status:s.status};
+  log("R-LADDER-01",true,"operations began "+s.vintage+", no change analysis has been run","Panel C: C0, not established, with the evidence needed to climb");
+
+  var headline=[],lower=[],pathwayBadge,near=false,unconfirmed=false,sparseMsg="";
+  if(s.ore_type==="laterite"&&s.process==="HPAL"){
+    headline=LATERITE_BASE.slice();lower=[{n:"Cd",ev:"preprint",comp:"discharge",cite:"single study, shown (D1)"}];
+    pathwayBadge={v:"process acidity, and stored mineral acidity after closure",tier:"T4"};
+    log("R-WATCH-02",true,"ore laterite and process HPAL","headline rows: Cr(VI), Ni, Co, Mn, sulfate/TDS, Mg, turbidity, pH. Cadmium moves to lower-evidence (D1)");
+  } else if(s.ore_type==="laterite"&&s.process==="RKEF"){
+    headline=LATERITE_BASE.concat(s.captive_coal?RKEF_ADD:[]);
+    lower=[{n:"Cd",ev:"preprint",comp:"discharge",cite:"single study, shown (D1)"},{n:"B (boron)",ev:"preprint",comp:"coal-ash pathway",cite:"lower-evidence tier"}];
+    pathwayBadge={v:"process acidity",tier:"T4"};
+    log("R-WATCH-03",true,"ore laterite, process RKEF"+(s.captive_coal?", captive coal":", coal source unconfirmed"),s.captive_coal?"base laterite rows plus Hg, As, and Se (coal pathways)":"base laterite rows, coal rows held until the power source is confirmed");
+  } else if(s.ore_type==="laterite"&&s.process==="ore_export"){
+    headline=[{n:"Turbidity / TSS",ev:"NGO-field",comp:"runoff, sediment",cite:"cluster-6 field reports"},
+              {n:"Cr(VI)",ev:"NGO-field",comp:"ultramafic sediment",cite:"geogenic oxidation, field tier"},
+              {n:"Ni",ev:"NGO-field",comp:"ultramafic sediment",cite:"field tier"},
+              {n:"Mn",ev:"NGO-field",comp:"ultramafic sediment",cite:"field tier"}];
+    pathwayBadge={v:"none known (sediment-dominant)",tier:"T4"};
+    log("R-WATCH-04",true,"process ore export","sediment-dominant rows, plus Cr(VI), Ni, Mn at field evidence tier");
+  } else if(s.ore_type==="laterite"){
+    headline=LATERITE_BASE.slice();
+    pathwayBadge={v:"unconfirmed until the process is known",tier:"T4"};
+    unconfirmed=true;
+    log("R-WATCH-13",true,"the ore is laterite but the process is not confirmed","process unconfirmed. The watchlist shows the union of candidate laterite processes, flagged");
+  } else if(s.ore_type==="sulfide"){
+    headline=[{n:"pH / acidity",ev:"regulatory",comp:"acid-rock-drainage indicator",cite:"GARD Guide (Verburg et al. 2009)"},
+              {n:"Sulfate",ev:"regulatory",comp:"acid-rock-drainage indicator",cite:"GARD Guide (Verburg et al. 2009)"},
+              {n:"Metals mobilized at low pH (Cu, Co)",ev:"peer-reviewed",comp:"ore-suite, low-pH mobilisation",cite:"GARD mechanism; DRC contamination, Banza 2009, Nkulu 2018"}];
+    pathwayBadge={v:"geogenic acid-rock drainage",tier:"T4"};
+    log("R-WATCH-05",true,"pathway is geogenic acid-rock drainage (sulfide ore)","ARD row set (GARD-backed). Exact rows come from the Phase-3 table. Pathway badge stays T4 until waste characterization is sighted");
+  } else {
+    near=true;
+    sparseMsg=(s.ore_type==="unknown")?"There is not enough site data to build a chemical watchlist. Only the regulatory monitoring baseline applies. Confirm the ore type and process to build the list.":"The main risk for this commodity is water balance. See Panel A and Panel B. The chemical watchlist is nearly empty on purpose.";
+    log("R-WATCH-06",true,"the ore type or commodity has a sparse or unknown profile","near-empty watchlist. The tool shows the regulatory floor and routes to the basin read");
+  }
+
+  var bench=["WHO"];
+  if(s.national_std){bench.push(s.receptor==="marine"?"PP 22/2021 L.VIII (marine)":"PP 22/2021 L.VI (freshwater)");bench.push("IFC (context only)");}
+  log("R-WATCH-07",true,"receptor is "+s.receptor+(s.national_std?"":", national standards not transcribed"),"benchmark columns: "+bench.join(", ")+(s.national_std?"":". National column omitted rather than guessed"));
+  log("R-WATCH-01",true,"this is a metal mine","regulatory monitoring baseline rendered, subordinate to commodity rows");
+
+  var emptyState=!s.measured;
+  log("R-WATCH-11",emptyState,emptyState?"no measured values exist for this site":"a measured value exists",emptyState?"empty state: a data gap, not an all-clear, routed to M5":"benchmark guard runs on the measured value");
+
+  var watchRouteLabel=unconfirmed?"Laterite, process unconfirmed":
+    near?"Unknown or sparse":
+    (s.ore_type==="laterite"&&s.process==="HPAL")?"HPAL laterite":
+    (s.ore_type==="laterite"&&s.process==="RKEF")?("RKEF laterite"+(s.captive_coal?" (+coal)":"")):
+    (s.ore_type==="laterite"&&s.process==="ore_export")?"Ore-export laterite":
+    (s.ore_type==="sulfide")?"Sulfide / ARD":"Unknown or sparse";
+  out.watch={headline:headline,lower:lower,floor:FLOOR,pathway:pathwayBadge,bench:bench,empty:emptyState,near:near,national:s.national_std,unconfirmed:unconfirmed,sparseMsg:sparseMsg};
+
+  out.decision={
+    bws:s.bws,bufferHalf:bufferHalf,rfr:s.rfr,
+    inBuffer:inBuffer,scarcityCand:scarcityCand,
+    seasonalFlag:seasonalFlag,seasonalStatus:seasonalStatus,
+    stressUnder20:(s.bws<20),floodHigh:floodHigh,
+    disrupt:disrupt,provisional:provisional,regime:regime,
+    demandTier:A.tier,demandReason:A.reasonShort||null,metered:!!s.metered,licensed:!!s.licensed,
+    hasCoeff:!!(coeff(s.commodity,s.process)&&s.capacity),
+    coeffExists:!!coeff(s.commodity,s.process),capacityKnown:s.capacity>0,processKnown:(s.process!=="unknown"),
+    watchRoute:watchRouteLabel
+  };
+
+  var gap,route,sel,secondary=[];
+  if(!near&&emptyState){
+    sel="measurement";route="M5";
+    gap="This is what the tool cannot tell you. It cannot tell you if "+receptorWord(s.receptor)+" has any of the listed contaminants. Satellites cannot see water chemistry. No public measurement exists for this site. A ground sample is the missing link.";
+    if(A.tier==="T4")secondary.push("the real water use of this operation. Send a disclosure request (M4)");
+    if(out.regime.seasonalStatus==="unassessed")secondary.push("if the dry season is short of water here");
+  } else if(A.tier==="T4"){
+    sel="demand";route="M4";
+    gap="This is what the tool cannot tell you. It cannot tell you how much water this operation really uses. No public figure exists. The operator could give this number today.";
+  } else if(out.regime.seasonalStatus==="unassessed"){
+    sel="seasonal";route="M5";
+    gap="This is what the tool cannot tell you. It cannot tell you if the dry season is short of water here. The tool has not run the seasonal screen for this basin.";
+  } else {
+    sel="attribution";route="M5";
+    gap="This is what the tool cannot tell you. It cannot tell you what part of the basin stress this mine causes. No method can do this. Question any figure that claims to.";
+  }
+  log("R-GAP-02",true,"highest-salience gap by priority: "+sel,"gap line composed for this site, routed to "+route);
+  out.gap={text:gap,route:route,sel:sel,secondary:secondary};
+
+  out.banned=true;
+  log("R-BANNED-01..12",false,"scan the assembled read for blocked constructions","all twelve integrity checks passed");
+
+  /* Screening summary (presentation layer). Two SEPARATE levels, never blended.
+     Stress = the Aqueduct basin class (a published modeled value).
+     Quality = hazard potential from the process type (a screen, not a measurement). */
+  var stressLevel=classOfBws(s.bws), stressNote="";
+  if(seasonalFlag) stressNote="This is the annual level. A dry-season scarcity flag is set. So the dry season is worse than this level.";
+  else if(seasonalStatus==="unassessed") stressNote="This is the annual level only. The tool has not assessed the dry season yet.";
+  else if(regime.indexOf("disruption")>-1) stressNote="The scarcity is low. But flooding and disruption are the main water risk here.";
+  else if(inBuffer) stressNote="This basin sits near an Aqueduct class edge, so the regime read is mixed. The stress class itself is "+stressLevel+".";
+  else if(aq5) stressNote="At this finer resolution the dry-season screen is clear.";
+  var qLevel,qNote="";
+  if(near){qLevel="Low";qNote="water balance is the main risk for this commodity, not chemistry.";}
+  else if(s.ore_type==="laterite"&&s.process==="ore_export"){qLevel="Medium";qNote="sediment-dominant, with geogenic metals in ultramafic terrain.";}
+  else if(s.ore_type==="laterite"&&s.process==="RKEF"){qLevel=s.captive_coal?"Very High":"High";qNote=s.captive_coal?"process metals, plus mercury and arsenic from captive coal power.":"process metals from smelting.";}
+  else if(s.ore_type==="laterite"&&s.process==="HPAL"){qLevel="High";qNote="chromium-6 and process acidity are documented for this process.";}
+  else if(s.ore_type==="sulfide"){qLevel="High";qNote="acid-rock drainage can mobilise metals at low pH.";}
+  else {qLevel="Medium";}
+  out.summary={
+    stress:{level:stressLevel,note:stressNote,tier:"T2",tierLabel:"Aqueduct 4.0 sub-basin class",
+            pct:s.bws,cat:classOfBws(s.bws),real:(!!s.aqsrc&&!s._edited),edited:!!s._edited,
+            y2030:(typeof s.y2030r==="number")?s.y2030r:Math.round(s.bws*1.15*10)/10,
+            y2050:(typeof s.y2050r==="number")?s.y2050r:Math.round(s.bws*1.3*10)/10,
+            rfr:s.rfr,rfrLabel:s.rfrLabel||s.rfr,sevLabel:s.sevLabel||null,iavLabel:s.iavLabel||null,pfaf:s.pfaf||null,
+            lat:(typeof s.lat==="number")?s.lat:null,lon:(typeof s.lon==="number")?s.lon:null,
+            seasonalPeak:(aq5&&driest!==null)?driest:null,
+            source:s._edited?("Edited scenario. These basin values were changed by hand. They are not an Aqueduct reading of a named site."):(s.aqsrc?("Real Aqueduct 4.0 value for the "+s.aqsrc+" ("+(s.aqres||"sub-basin")+"). Read point-in-polygon from the Esri Living Atlas mirror of WRI Aqueduct 4.0. Kuzma et al. 2023."):"Representative basin values. Not a published Aqueduct read of a named site.")},
+    quality:{level:qLevel,note:qNote,tier:"screen",tierLabel:"process-type hazard potential, not a measurement"}
+  };
+
+  out.aq5=aq5;
+  return out;
+}
+
+/* ---------- RENDER ---------- */
+var state=null, activePreset=null, aq5=false, firstPaint=true, traceFilter="all", lastOutput=null, analyzed=false;
+var _walk=[], walkMode=false, walkIdx=0, walkTimer=null;
+var prefersReduced=(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+function tb(tier){var m=TIERS[tier];return '<span class="tb '+m.cls+'" title="'+m.desc+'">'+m.label+'</span>';}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+
+function renderPresets(){
+  var el=document.getElementById("presets");
+  el.innerHTML=PRESETS.map(function(p){
+    return '<button class="preset" data-id="'+p.id+'" aria-pressed="'+(activePreset===p.id)+'">'+
+      '<span class="p-ic">'+p.ic+'</span><span><span class="p-t">'+p.title+'</span><span class="p-s">'+p.sub+'</span></span></button>';
+  }).join("");
+  el.querySelectorAll(".preset").forEach(function(b){b.addEventListener("click",function(){loadPreset(b.getAttribute("data-id"));});});
+}
+function seg(label,key,opts){
+  var cur=state[key];
+  return '<div class="field"><label>'+label+'</label><div class="seg" data-key="'+key+'">'+
+    opts.map(function(o){var v=(typeof o==="object")?o.v:o;var t=(typeof o==="object")?o.t:o;
+      return '<button data-v="'+v+'" aria-pressed="'+(cur===v)+'">'+t+'</button>';}).join("")+'</div></div>';
+}
+function renderControls(){
+  var c=document.getElementById("controls");
+  var html="";
+  html+='<div class="grouphdr">The mine</div>';
+  html+=seg("Commodity","commodity",[{v:"Ni",t:"Nickel"},{v:"Cu-Co",t:"Copper-cobalt"}]);
+  html+=seg("Ore type","ore_type",[{v:"laterite",t:"Laterite"},{v:"sulfide",t:"Sulfide"},{v:"unknown",t:"Unknown"}]);
+  html+=seg("Process","process",[{v:"HPAL",t:"HPAL"},{v:"RKEF",t:"RKEF"},{v:"ore_export",t:"Ore export"},{v:"sulfide_flotation",t:"Flotation"},{v:"unknown",t:"Unknown"}]);
+  if(state.process==="RKEF"){
+    html+='<label class="sw"><input type="checkbox" id="cc" '+(state.captive_coal?"checked":"")+'><span class="track"></span><span class="sw-l">Captive coal power<small>Adds mercury, arsenic, selenium</small></span></label>';
+  }
+  html+=seg("Receptor","receptor",[{v:"marine",t:"Marine"},{v:"freshwater",t:"Freshwater"},{v:"groundwater",t:"Groundwater"}]);
+  html+=seg("Tailings","waste_mgmt",[{v:"dam",t:"Dam"},{v:"dry_stack",t:"Dry stack"},{v:"DSTP",t:"Deep-sea"},{v:"co_disposal",t:"Co-disposal"}]);
+  html+='<div class="field"><label>Production capacity (t metal per year)</label><div class="rangewrap"><input type="range" id="cap" min="0" max="120000" step="5000" value="'+state.capacity+'"><span class="rangeval tnum" id="capv">'+state.capacity.toLocaleString()+'</span></div></div>';
+
+  html+='<div class="grouphdr">The basin</div>';
+  html+='<div class="field"><label>Baseline water stress (annual)</label><div class="rangewrap"><input type="range" id="bws" min="0" max="100" step="1" value="'+state.bws+'"><span class="rangeval tnum" id="bwsv">'+state.bws+'% '+classOfBws(state.bws)+'</span></div></div>';
+  html+=seg("Riverine flood risk","rfr",[{v:"Low",t:"Low"},{v:"Medium",t:"Med"},{v:"High",t:"High"},{v:"Extremely High",t:"Extreme"}]);
+  html+='<label class="sw"><input type="checkbox" id="awon" '+(state.aware_on?"checked":"")+'><span class="track"></span><span class="sw-l">AWARE worst-month CF known<small>Route B for the seasonal screen</small></span></label>';
+  if(state.aware_on){
+    html+='<div class="field"><label>AWARE worst-month CF</label><div class="rangewrap"><input type="range" id="cf" min="0" max="100" step="1" value="'+state.aware_cf+'"><span class="rangeval tnum" id="cfv">'+state.aware_cf+'</span></div></div>';
+  }
+  html+=seg("Groundwater trend","gtd",[{v:"no_data",t:"No data"},{v:"Low",t:"Low"},{v:"High",t:"High decline"}]);
+
+  html+='<div class="grouphdr">What we have on this site</div>';
+  html+='<label class="sw"><input type="checkbox" id="natl" '+(state.national_std?"checked":"")+'><span class="track"></span><span class="sw-l">National standards transcribed<small>Adds a national benchmark column</small></span></label>';
+  html+='<label class="sw"><input type="checkbox" id="lic" '+(state.licensed?"checked":"")+'><span class="track"></span><span class="sw-l">License figure available<small>Unlocks the permitted tier</small></span></label>';
+  html+='<label class="sw"><input type="checkbox" id="clk" '+(state.cluster_known?"checked":"")+'><span class="track"></span><span class="sw-l">Cluster demand known<small>Runs the vintage check</small></span></label>';
+  html+='<label class="sw"><input type="checkbox" id="meas" '+(state.measured?"checked":"")+'><span class="track"></span><span class="sw-l">A ground sample exists<small>Turns off the empty state</small></span></label>';
+  c.innerHTML=html;
+
+  c.querySelectorAll(".seg").forEach(function(sg){
+    var key=sg.getAttribute("data-key");
+    sg.querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){setField(key,b.getAttribute("data-v"));});});
+  });
+  bindChk("cc","captive_coal");bindChk("awon","aware_on");bindChk("natl","national_std");
+  bindChk("lic","licensed");bindChk("clk","cluster_known");bindChk("meas","measured");
+  bindRange("cap","capacity",function(v){return parseInt(v,10);},"capv",function(v){return v.toLocaleString();});
+  bindRange("bws","bws",function(v){return parseInt(v,10);},"bwsv",function(v){return v+"% "+classOfBws(v);});
+  bindRange("cf","aware_cf",function(v){return parseInt(v,10);},"cfv",function(v){return ""+v;});
+}
+function bindChk(id,key){var e=document.getElementById(id);if(e)e.addEventListener("change",function(){setField(key,e.checked);});}
+function clearBasinProvenance(){state._edited=true;state.aqsrc=null;state.pfaf=null;state.y2030r=null;state.y2050r=null;state.rfrLabel=null;state.sevLabel=null;state.iavLabel=null;}
+function bindRange(id,key,parse,vid,fmt){var e=document.getElementById(id);if(!e)return;
+  e.addEventListener("input",function(){var v=parse(e.value);state[key]=v;var lbl=document.getElementById(vid);if(lbl)lbl.textContent=fmt(v);if(id==="bws"||id==="cf")clearBasinProvenance();markCustom();});
+}
+function setField(key,val){state[key]=val;
+  if(key==="rfr"||key==="gtd"||key==="aware_on")clearBasinProvenance();
+  if(key==="process"&&(val==="HPAL"||val==="RKEF"||val==="ore_export")){state.ore_type="laterite";state.commodity="Ni";}
+  if(key==="process"&&val==="sulfide_flotation"){state.ore_type="sulfide";state.commodity="Cu-Co";}
+  if(key==="ore_type"&&val==="sulfide"){state.process="sulfide_flotation";state.commodity="Cu-Co";}
+  if(key==="ore_type"&&val==="unknown"){state.process="unknown";}
+  if(key==="ore_type"&&val==="laterite"&&(state.process==="sulfide_flotation")){state.process="HPAL";state.commodity="Ni";}
+  markCustom();renderControls();
+}
+function markCustom(){activePreset=null;document.querySelectorAll(".preset").forEach(function(b){b.setAttribute("aria-pressed","false");});}
+function loadPreset(id){
+  var p=PRESETS.find(function(x){return x.id===id;});
+  state=JSON.parse(JSON.stringify(p.s));state._presetAq5=p.aq5;activePreset=id;
+  renderPresets();renderControls();
+}
+
+function renderTrace(o){
+  var el=document.getElementById("trace");
+  var fired=o.trace.filter(function(t){return t.fired;}).length;
+  document.getElementById("traceMeta").textContent=o.trace.length+" rules evaluated, "+fired+" fired"+(traceFilter==="fired"?" (showing the rules that fired)":"");
+  var rows=(traceFilter==="fired")?o.trace.filter(function(t){return t.fired;}):o.trace;
+  el.className="trace-list"+((!firstPaint)?" anim":"");
+  if(!rows.length){el.innerHTML='<div class="trace-empty">No rules fired for these inputs.</div>';return;}
+  el.innerHTML=rows.map(function(t,i){
+    var em=t.emitted?('<span class="em">emits <b>'+esc(t.emitted)+'</b></span>'):"";
+    return '<div class="tr '+(t.fired?"fired":"skip")+'" style="animation-delay:'+(Math.min(i,18)*26)+'ms">'+
+      '<span class="mk"></span><span class="rid">'+t.id+'</span>'+
+      '<span class="bc">'+esc(t.because)+em+'</span></div>';
+  }).join("");
+}
+
+function evBadge(ev){var m=EV[ev]||EV.preprint;return '<span class="ev '+m.c+'">'+m.t+'</span>';}
+function rowsHtml(list){return list.map(function(r){
+  return '<div class="row"><div><div class="cn">'+r.n+'</div><div class="cc">'+r.comp+' · '+r.cite+'</div></div>'+evBadge(r.ev)+'</div>';}).join("");}
+function regimeRisk(label){
+  if(label.indexOf("disruption")>-1)return "disruption (sediment, turbidity, altered runoff, flood variability)";
+  if(label.indexOf("seasonal")>-1)return "seasonal scarcity (the dry season is the pressure, not the annual average)";
+  if(label.indexOf("scarcity")>-1)return "scarcity (competition for a limited supply)";
+  if(label.indexOf("mixed")>-1)return "mixed. This sub-basin sits near a class edge, so both scarcity and disruption readings are carried";
+  return "no single dominant regime. The panels are shown side by side";
+}
+
+function meterHtml(title,sum){
+  var order=["Low","Low-Medium","Medium-High","High","Extremely High"];
+  var idx=order.indexOf(sum.level); if(idx<0)idx=0;
+  var segs=order.map(function(lab,k){
+    var on=(k<=idx),act=(k===idx);
+    return '<span class="mseg lc'+k+(on?" on":"")+(act?" act":"")+'">'+lab+'</span>';
+  }).join("");
+  var lvlCls="lc"+idx;
+  var tierBadge=sum.tier==="T2"?tb("T2"):'<span class="tb tb-screen">Screening</span>';
+  return '<div class="meter"><div class="m-h">'+title+'</div>'+
+    '<div class="m-scale">'+segs+'</div>'+
+    '<div class="m-level '+lvlCls+'">'+sum.level+'</div>'+
+    (sum.note?'<div class="m-note">'+sum.note+'</div>':"")+
+    '<div class="m-tier">'+tierBadge+' '+sum.tierLabel+'</div></div>';
+}
+
+function renderSummaryBar(o){
+  var el=document.getElementById("summaryBar");if(!el)return;
+  var p=activePreset?PRESETS.find(function(x){return x.id===activePreset;}):null;
+  var title=p?p.title:"Custom site",ic=p?p.ic:"C",st=state,r=o.regime;
+  var attrs=[(st.commodity==="Cu-Co"?"Copper-cobalt":"Nickel"),st.process.replace(/_/g," "),st.receptor,(st.capacity>0?st.capacity.toLocaleString()+" t/yr":"capacity unknown"),"stress "+st.bws+"%","flood "+(st.rfrLabel||st.rfr),(aq5?"Aqueduct 5.0 on":"Aqueduct 4.0")].join("  ·  ");
+  el.innerHTML='<div class="sb-site"><span class="sb-ic">'+ic+'</span><div><div class="sb-title">'+title+'</div><div class="sb-attrs">'+attrs+'</div></div></div>'+
+    '<div class="sb-verdict"><span class="rn">'+cap(r.label)+(r.provisional?" (prov.)":"")+'</span><span class="confbadge conf-'+r.confidence+'">'+r.confidence+'</span></div>'+
+    '<div class="sb-actions"><label class="sw"><input type="checkbox" id="aq5sum" '+(aq5?"checked":"")+'><span class="track"></span><span class="sw-l">Aqueduct 5.0</span></label>'+
+    '<button class="sb-btn" id="replayBtn">Replay</button><button class="sb-btn primary" id="editBtn">Edit inputs</button></div>';
+  var a=document.getElementById("aq5sum");if(a)a.addEventListener("change",function(){setAq5(a.checked);runAndRender(true);});
+  var rb=document.getElementById("replayBtn");if(rb)rb.addEventListener("click",function(){runAndRender(true);});
+  var eb=document.getElementById("editBtn");if(eb)eb.addEventListener("click",editInputs);
+}
+
+function pctColor(p){if(p<10)return"#2f9e7d";if(p<20)return"#7ba03e";if(p<40)return"#c79200";if(p<=80)return"#d9722b";return"#c1352a";}
+var _mapCache={}, _leafMap=null;
+function pointInRing(x,y,ring){var inside=false;for(var i=0,j=ring.length-1;i<ring.length;j=i++){var xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];var hit=((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi);if(hit)inside=!inside;}return inside;}
+function pointInGeo(lon,lat,geo){
+  var f=(geo.features&&geo.features.length)?geo.features[0]:geo;var g=f.geometry||f;if(!g)return false;
+  var polys=(g.type==="MultiPolygon")?g.coordinates:(g.type==="Polygon"?[g.coordinates]:[]);
+  for(var p=0;p<polys.length;p++){var rings=polys[p];if(!rings.length)continue;
+    if(pointInRing(lon,lat,rings[0])){var hole=false;for(var h=1;h<rings.length;h++){if(pointInRing(lon,lat,rings[h])){hole=true;break;}}if(!hole)return true;}
+  }
+  return false;
+}
+function initStressMap(st,aq5){
+  var el=document.getElementById("stressMap");if(!el)return;
+  if(typeof L==="undefined"){el.innerHTML='<div class="mapfallback">The map needs an internet connection to load.</div>';return;}
+  if(_leafMap){try{_leafMap.remove();}catch(e){}_leafMap=null;}
+  var lat=(typeof st.lat==="number")?st.lat:null, lon=(typeof st.lon==="number")?st.lon:null;
+  if(lat===null||lon===null){el.innerHTML='<div class="mapfallback">A map is available for sites with a known location. Choose an example site.</div>';return;}
+  var map=L.map(el,{zoomControl:true,attributionControl:true,scrollWheelZoom:false}).setView([lat,lon],9);
+  _leafMap=map;
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  var tiles=dark?"https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}":"https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+  L.tileLayer(tiles,{maxZoom:16,attribution:"Esri, HERE, Garmin, FAO, NOAA, USGS"}).addTo(map);
+  var mean=st.pct, col=pctColor(mean), overlay=L.layerGroup().addTo(map), seed=mean*0.9+1.3;
+  function marker(){L.circleMarker([lat,lon],{radius:6,color:"#111",weight:2,fillColor:"#fff",fillOpacity:1}).addTo(overlay).bindTooltip("mine site",{permanent:true,direction:"right",className:"minetip",offset:[8,0]});}
+  function downscale(geo){
+    var b=L.geoJSON(geo).getBounds(),s=b.getSouth(),n=b.getNorth(),w=b.getWest(),e=b.getEast(),N=20,cwv=(e-w)/N,chv=(n-s)/N;
+    for(var i=0;i<N;i++)for(var j=0;j<N;j++){
+      var la=s+chv*(j+0.5),lo=w+cwv*(i+0.5);if(!pointInGeo(lo,la,geo))continue;
+      var x=i/N,y=j/N,nz=0.5+0.32*Math.sin(x*9.4+seed)*Math.cos(y*7.0+seed*0.7)+0.16*Math.sin(x*19+seed*1.7)*Math.sin(y*15+seed*0.3);
+      var range=Math.max(8,mean*1.0),p=Math.max(0,Math.min(100,mean+(nz-0.5)*2*range));
+      L.rectangle([[la-chv/2,lo-cwv/2],[la+chv/2,lo+cwv/2]],{stroke:false,fillColor:pctColor(p),fillOpacity:0.55}).addTo(overlay);
+    }
+  }
+  function draw(geo){
+    if(geo){
+      var poly=L.geoJSON(geo,{style:{color:dark?"#cfd6e0":"#33404f",weight:1.2,fillColor:col,fillOpacity:aq5?0.1:0.42}}).addTo(overlay);
+      try{map.fitBounds(poly.getBounds(),{maxZoom:10,padding:[16,16]});}catch(e){}
+      if(aq5)downscale(geo);
+    } else {
+      L.circle([lat,lon],{radius:18000,color:dark?"#cfd6e0":"#33404f",weight:1.2,fillColor:col,fillOpacity:aq5?0.12:0.4}).addTo(overlay);
+    }
+    marker();
+    setTimeout(function(){try{map.invalidateSize();}catch(e){}},90);
+  }
+  var key=st.pfaf||("c"+lat.toFixed(3)+","+lon.toFixed(3));
+  if(Object.prototype.hasOwnProperty.call(_mapCache,key)){draw(_mapCache[key]);}
+  else{
+    var url="https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/aqueduct_water_risk/FeatureServer/1/query?geometry="+lon+","+lat+"&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=pfaf_id&returnGeometry=true&outSR=4326&maxAllowableOffset=0.008&f=geojson";
+    fetch(url).then(function(r){return r.json();}).then(function(d){var geo=(d&&d.features&&d.features.length)?d:null;_mapCache[key]=geo;draw(geo);}).catch(function(){_mapCache[key]=null;draw(null);});
+  }
+}
+
+function plainVerdict(o){
+  var r=o.regime.label, g=o.gap.sel, risk, gap;
+  if(r.indexOf("disruption")>-1) risk="Flooding and sediment are the main water risk here, not shortage.";
+  else if(r.indexOf("seasonal")>-1) risk="A dry-season shortage is the main water risk here.";
+  else if(r.indexOf("scarcity")>-1) risk="Competition for a limited water supply is the main water risk here.";
+  else if(r.indexOf("mixed")>-1) risk="This basin sits between two water-risk types, so the read stays cautious.";
+  else risk="No single water-risk type dominates here, and annual water stress is low.";
+  if(g==="measurement") gap="And no one has measured this site's water yet, which is the missing link.";
+  else if(g==="demand") gap="And the mine's own water use is not public, which the operator could disclose.";
+  else if(g==="seasonal") gap="And the dry season here has not been assessed yet.";
+  else gap="And no method can say what share of the basin's stress this one mine causes.";
+  return '<div class="verdict-plain"><span class="vp-ic">◆</span><p>'+risk+' '+gap+'</p></div>';
+}
+function renderOutput(o){
+  var el=document.getElementById("output");
+  var r=o.regime,A=o.A,B=o.B,w=o.watch;
+
+  var st=o.summary.stress;
+  var meter='<div class="meters one">'+meterHtml("Water stress",st)+'</div>';
+  var proj=(st.seasonalPeak!==null)
+    ?('Aqueduct 5.0 (dummy): dry-season peak about '+st.seasonalPeak+'% in the driest quarter.')
+    :((st.edited?'Illustrative projections: ':st.real?'Aqueduct 4.0 projections (business as usual): ':'Projections (representative): ')+'2030 about '+st.y2030+'%, 2050 about '+st.y2050+'%.');
+  var whyCompare='<div class="whycompare"><div class="whyhdr">Why this level. The basin state, next to a mine like this.</div>'+
+    '<div class="whycols">'+
+      '<div class="whycard"><div class="wc-h">Basin status</div><div class="wc-big">'+st.pct+'%</div><div class="wc-cat">'+st.cat+' baseline water stress</div>'+
+        '<div class="wc-sub">Share of the available water that all users already take (Aqueduct 4.0). '+proj+'</div>'+
+        '<div class="wc-sub">Also from Aqueduct 4.0: flood risk '+(st.rfrLabel||st.rfr)+(st.sevLabel?(', seasonal variability '+st.sevLabel):'')+(st.iavLabel?(', interannual variability '+st.iavLabel):'')+'.</div>'+
+        '<div class="wc-tier">'+tb("T2")+' condition</div></div>'+
+      '<div class="whyvs">vs</div>'+
+      '<div class="whycard"><div class="wc-h">A mine like this would draw</div>'+
+        (o.A.fork
+          ? '<div class="wc-big sm">Not one figure</div><div class="wc-cat">the process is not confirmed</div>'+
+            '<div class="forklist">'+o.A.fork.map(function(f){return '<div class="forkrow"><span class="fk-n">'+f.name+'</span><span class="fk-v">'+f.fig+'</span></div>';}).join("")+'</div>'+
+            '<div class="wc-sub">'+o.A.forkNote+'</div>'
+          : o.A.intensity
+          ? '<div class="wc-big sm">'+o.A.intensity+'</div><div class="wc-cat">per tonne, capacity unknown</div>'+
+            '<div class="wc-sub">'+o.A.statement+'</div>'
+          : '<div class="wc-big sm">'+o.A.figure+'</div><div class="wc-cat">'+o.A.short+'</div>'+
+            '<div class="wc-sub">'+(o.A.sourceCite?('A water footprint for this process type, from '+o.A.sourceCite+'. Not a measurement of this site.'):'This is the water a mine of this type uses (Panel A pressure), shown beside the basin, not divided into it.')+'</div>')+
+        '<div class="wc-tier">'+tb(o.A.tier)+' pressure</div></div>'+
+    '</div>'+
+    '<div class="whynote">The level comes from the basin status. The tool shows the mine water use next to it, so you can see the pressure. The tool does not divide one into the other. It does not say what part of the basin stress this mine causes. No method can do this. Question any figure that claims to.</div></div>';
+  var mapCard='<div class="mapcard"><div class="wc-h">Basin water-stress map '+(o.aq5?'(Aqueduct 5.0, downscaled)':'(Aqueduct 4.0)')+'</div>'+
+    '<div id="stressMap"></div>'+
+    '<div class="maplegend"><span>Low</span><i class="lg lg0"></i><i class="lg lg1"></i><i class="lg lg2"></i><i class="lg lg3"></i><i class="lg lg4"></i><span>Very High</span></div>'+
+    '<div class="mapcap">'+(o.aq5?'This view is about 10 times finer. It is a downscaled, illustrative texture, not measured data. It suggests the kind of variation inside the sub-basin that one value hides. It is not attributed to the mine.':(st.edited?'This is an edited scenario. You changed the stress value by hand, so it is not an Aqueduct reading. The basin outline is real; the colour is your input.':st.real?('This is the Aqueduct 4.0 value for one sub-basin (HydroBASINS level 6'+(st.pfaf?(', pfaf '+st.pfaf):'')+'). One value covers the whole sub-basin. It hides the local variation inside it. Turn on Aqueduct 5.0 to see a downscaled, higher-resolution view.'):'This is one representative value for the area. Turn on Aqueduct 5.0 to see a downscaled, higher-resolution view.'))+'</div>'+
+    (st.source?('<div class="mapsrc">'+st.source+'</div>'):'')+'</div>';
+  var gapIcon={measurement:"🔬",demand:"📄",seasonal:"☀",attribution:"⚖"}[o.gap.sel]||"◇";
+  var secondary=o.gap.secondary.length?('<div class="secondary">Also open: '+o.gap.secondary.join("; ")+'.</div>'):"";
+  var routeText={M5:"→ commission a ground sample (M5)",M4:"→ ask the operator to disclose (M4)"}[o.gap.route]||("→ "+o.gap.route);
+  var gapHtml='<div class="gap"><div class="gh"><span class="gi">'+gapIcon+'</span><h3>The gap that remains</h3></div><p>'+o.gap.text+'</p><div class="route">'+routeText+'</div>'+secondary+'</div>';
+  var readnote='<div class="readnote">The stress level is the basin\'s Aqueduct 4.0 class. The chemical hazard for this process type is in the full technical read below.</div>';
+
+  var flags=r.flags.map(function(f){return '<span class="flag'+(f.warn?" warn":"")+'">'+f.t+'</span>';}).join("");
+  var aBand=A.tier==="T3"?'<p class="sub">Band basis: '+A.band+'. '+A.grade+'. '+(A.sourceNote||"We have not yet checked this range against the original study that measured it, so treat the size as a rule of thumb.")+' The direction is solid: HPAL uses far more water than RKEF. Split by source (surface, ground, sea): not public.</p>':
+            A.tier==="T4"?'<p class="sub">The tool routes this to a disclosure request (M4). The operator could give this number today.</p>':"";
+  var bIndicators='<p class="sub">Flood risk '+B.rfr+'. Groundwater trend: '+(B.gtd==="no_data"?"no data (shown, not hidden)":B.gtd)+'.</p>';
+  var bSeason=B.seasonalCaveat?('<p>'+B.seasonalCaveat+'</p>'):"";
+  var bVintage=B.vintageFlag?('<p class="sub">'+B.vintageFlag+'</p>'):"";
+  var watchInner;
+  if(w.near){watchInner='<p>'+(w.sparseMsg||"The chemical watchlist is nearly empty for this commodity.")+'</p>'+
+    '<details class="floor" open><summary>Regulatory monitoring baseline</summary><div class="rows" style="margin-top:6px">'+rowsHtml(w.floor)+'</div></details>';}
+  else{
+    var pathway=w.pathway?('<div style="margin:2px 0 8px"><span class="tb tb-'+w.pathway.tier+'">pathway '+w.pathway.tier+'</span> <span style="font-size:12.5px;color:var(--ink-2)">'+w.pathway.v+'</span></div>'):"";
+    var uncBanner=w.unconfirmed?'<div class="emptystate" style="border-color:var(--t3);background:var(--t3-bg)"><b style="color:var(--t3)">Process not confirmed.</b> This list is the union of candidate processes for a laterite ore. Confirm the process with two independent sources to narrow it.</div>':"";
+    watchInner=pathway+uncBanner+
+      '<p style="font-size:12.5px;margin:6px 0 6px">Reports from other sites show that mines with this process can release these:</p>'+
+      '<div class="rows">'+rowsHtml(w.headline)+'</div>'+
+      (w.lower.length?('<div class="subhead">Lower-evidence (single study, shown)</div><div class="rows">'+rowsHtml(w.lower)+'</div>'):"")+
+      '<details class="floor"><summary>Regulatory monitoring baseline</summary><div class="rows" style="margin-top:6px">'+rowsHtml(w.floor)+'</div></details>'+
+      '<div class="bench">'+w.bench.map(function(b){return '<span class="bcol">'+b+'</span>';}).join("")+'</div>'+
+      (w.national?"":'<p class="sub" style="margin-top:6px">The tool has not transcribed the national standards for this country. It omits the national column. It does not guess.</p>')+
+      '<p class="locknote">This is a list of what to watch for. It is not a measurement of the water at this site.</p>'+
+      (w.empty?'<div class="emptystate">No measured value exists for this site. <b>This is a data gap. It is not an all-clear.</b> Get a credible measurement (M5).</div>':'<p class="sub">A ground sample exists. The benchmark guard compares it to each standard that applies. It uses the fraction and speciation metadata.</p>');
+  }
+  var detailed=
+    '<div class="verdict"><div class="regime-line"><span class="regime-name">'+cap(r.label)+(r.provisional?" (provisional)":"")+'</span>'+
+      '<span class="confbadge conf-'+r.confidence+'">confidence '+r.confidence+'</span></div><div class="flags">'+flags+'</div></div>'+
+    '<div class="pnl"><div class="pnl-h"><span class="pnl-key">A</span><h3>Pressure &middot; what the mine takes</h3></div>'+
+      '<p>'+A.statement+' '+tb(A.tier)+'</p>'+aBand+'</div>'+
+    '<div class="pnl"><div class="pnl-h"><span class="pnl-key">B</span><h3>Condition &middot; the basin</h3></div>'+
+      '<p>Leading water risk here: '+regimeRisk(r.label)+'. '+tb("T2")+'</p>'+bSeason+bIndicators+bVintage+'</div>'+
+    '<div class="pnl"><div class="pnl-h"><span class="pnl-key">C</span><h3>Change &middot; since operations</h3></div>'+
+      '<p>'+(o.C.status==="proposed"?'This mine is proposed. There is no operating period to analyze yet. The pre-operation baseline window can start now.':'The tool has not analyzed the change since operations began in '+o.C.vintage+'.')+' <span class="tb tb-C0">No cause shown</span></p>'+
+      '<p class="sub">To climb the evidence ladder, you need more. A screening comparison needs at least 60 pre-months of satellite record. It also needs at least two valid comparison areas (M3). A measured chain needs paired upstream and downstream samples across flow states. It also needs a lithology check (M5). This belt has many operators. So any future change statement points to mining and industry in this area, not to one mine.</p></div>'+
+    '<div class="pnl"><div class="pnl-h"><span class="pnl-key">W</span><h3>Watchlist &middot; what to test for</h3></div>'+watchInner+'</div>'+
+    '<div class="checks"><span class="checkpill">12 / 12 checks passed</span>'+
+      '<span class="cl">no blended score, no caused-percent, no safe or unsafe verdict, no site-precision claim from basin data</span>'+
+      '<details class="banned"><summary>See the blocked constructions</summary><ul>'+
+        '<li>Never "the mine caused this change" (except a measured chain with human sign-off).</li>'+
+        '<li>Never "X percent of the basin\'s stress is due to this mine."</li>'+
+        '<li>Never a single blended score across panels. No arithmetic crosses a panel.</li>'+
+        '<li>Never "safe" or "unsafe" as a verdict, only "exceeds" or "does not exceed" a named standard.</li>'+
+        '<li>Never a predicted concentration. The watchlist is a hazard screen.</li>'+
+        '<li>Never an unlabeled point where the source is a coefficient band.</li>'+
+        '<li>Never a scarcity sentence in a disruption basin, and never "not stressed" from an annual composite.</li>'+
+        '<li>Never a site-precision claim from basin-resolution data.</li>'+
+        '<li>Never harden "typically risks releasing" into "is known to release" on a named site.</li>'+
+        '<li>Never a warranty verb such as "guarantees" or "removes guesswork."</li>'+
+        '<li>Never name a single operator in a change statement without geometric isolation and sign-off.</li>'+
+        '<li>Never a causal verb in a headline that the body then walks back.</li>'+
+      '</ul></details></div>';
+
+  var provKey='<div class="provkey"><span>How sure each value is:</span>'+
+    '<span class="tb tb-T1">Measured</span><span class="pk-sep">most sure</span>'+
+    '<span class="tb tb-T2">Modelled</span>'+
+    '<span class="tb tb-T3">Our estimate</span>'+
+    '<span class="tb tb-T4">No data</span><span class="pk-sep">least sure</span></div>';
+  el.innerHTML=plainVerdict(o)+provKey+meter+mapCard+whyCompare+gapHtml+readnote+
+    '<details class="fullread"><summary>Show the full technical read (panels A, B, C, watchlist, integrity checks)</summary><div class="fr-body">'+detailed+'</div></details>';
+  initStressMap(st,o.aq5);
+}
+
+function runAndRender(animate){
+  var s=Object.assign({},state);s._presetAq5=state._presetAq5;
+  var o=runEngine(s,aq5);lastOutput=o;
+  var ea=animate && !prefersReduced;
+  resetWalkUI();
+  renderSummaryBar(o);
+  var total=renderFlow(o,ea);
+  renderOutput(o);
+  renderTrace(o);
+  var out=document.getElementById("output");
+  if(ea){out.style.animation="none";void out.offsetWidth;out.style.animation="frise .5s ease 1100ms both";}
+  else{out.style.animation="";out.style.opacity="1";}
+  firstPaint=false;
+}
+function analyze(){
+  analyzed=true;
+  document.getElementById("setupWrap").hidden=true;
+  document.getElementById("resultsWrap").hidden=false;
+  runAndRender(true);
+  var sb=document.getElementById("summaryBar");
+  if(sb&&sb.scrollIntoView)sb.scrollIntoView({behavior:prefersReduced?"auto":"smooth",block:"start"});
+}
+function editInputs(){
+  analyzed=false;
+  document.getElementById("resultsWrap").hidden=true;
+  document.getElementById("setupWrap").hidden=false;
+  renderControls();
+  window.scrollTo({top:0,behavior:"auto"});
+}
+
+/* ---------- Methodology ---------- */
+function renderMethodology(){
+  document.getElementById("tierLegend").innerHTML=Object.keys(TIERS).map(function(k){
+    return '<div class="tiercard"><div class="th">'+tb(k)+'</div><p>'+TIERS[k].desc+'</p></div>';}).join("");
+  var rungs=[
+    {c:"1",t:"Timing only",d:"Something changed after the mine started. The timing alone does not prove the mine caused it. This is as far as this tool ever goes.",ceil:true},
+    {c:"2",t:"Screening check",d:"Before and after, plus a comparison area that did not change. The most it can say: the same-size change is absent in the areas we checked."},
+    {c:"3",t:"Formal analysis",d:"A published statistical study attributes a share of the change to local development, with error bars. It still cannot name the mine or the substance."},
+    {c:"4",t:"Measured chain",d:"Ground samples trace the source to the pathway to the receptor, across seasons, with a geology check. Even here the tool states the chain and lets it speak."}
+  ];
+  document.getElementById("ladder").innerHTML=rungs.map(function(r){
+    return '<div class="rung'+(r.ceil?" ceil":"")+'"><div class="rc">'+r.c+'</div><div><div class="rt">'+r.t+(r.ceil?' <span class="ceilnote">as far as this tool goes</span>':"")+'</div><div class="rd">'+r.d+'</div></div></div>';}).join("");
+  var groups=[
+    {c:"R-CLASS",n:"Basin regime",x:"10 rules",d:"Classify the basin as scarcity, disruption, mixed, or none, with seasonal and vintage flags. The label orders the panels. It is a prior, not a switch."},
+    {c:"R-DEMAND",n:"Panel A demand",x:"8 rules",d:"Tier the water-use figure: measured, permitted, an estimated band, or unknown. A band wider than ten times collapses to unknown."},
+    {c:"R-COND",n:"Panel B condition",x:"7 rules",d:"Render basin indicators at true resolution. Never assert a negative from an annual average. Groundwater is its own line."},
+    {c:"R-WATCH",n:"Watchlist",x:"15 rules",d:"Route the process type to a contaminant list with evidence tiers. The empty state is the product: a data gap, not an all-clear."},
+    {c:"R-TIER",n:"Provenance",x:"6 rules",d:"Govern the tier badges. T3 is always a band. T4 absence is displayed, not hidden."},
+    {c:"R-LADDER",n:"Causal ladder",x:"8 rules",d:"Gate the language about change. Default C0. In a multi-operator belt, attribute to the area, never one named mine."},
+    {c:"R-GAP",n:"The gap line",x:"3 rules",d:"Compose one site-specific missing link, by priority: measurement, then demand, then seasonal, then the attribution boundary."},
+    {c:"R-BANNED",n:"Negative spec",x:"12 rules",d:"Block the constructions the data cannot support. Every read passes all twelve before it displays."}
+  ];
+  document.getElementById("ruleGroups").innerHTML=groups.map(function(g){
+    return '<div class="rg"><div class="rgt"><span class="rgc">'+g.c+'</span><span class="rgn">'+g.n+'</span></div><div class="rgd">'+g.x+'. '+g.d+'</div></div>';}).join("");
+  var samples=[
+    {h:"R-CLASS-02  Seasonal-scarcity screen",w:"WHEN the driest-quarter demand-to-supply ratio is at or above 40 percent, OR the worst-month AWARE factor is at or above 10, THEN set a seasonal-scarcity flag. When both inputs are missing, set the status to not assessed, and show it.",s:"SOURCE strawman A2 · confidence MED"},
+    {h:"R-DEMAND-06  Unknown water use",w:"WHEN there is no meter, no license, and no coefficient set for this commodity and process, THEN Panel A reads: no public figure exists for this operation's water use. Route to a disclosure request.",s:"SOURCE M2 section 3.2.3 · confidence HIGH"},
+    {h:"R-WATCH-11  Empty benchmark state",w:"WHEN no measured value exists, THEN render: no measured value exists for this site. That is a data gap, not an all-clear. Route to a measurement. The empty state is the product.",s:"SOURCE M1 section 2 and 4 · confidence HIGH"},
+    {h:"R-LADDER-06  Multi-operator rule",w:"WHEN several operators share the basin, THEN any change statement attributes to mining and industrial development in this area. A single mine is named only when geometry isolates it, and only after human sign-off.",s:"SOURCE X1 section 3 · confidence HIGH"}
+  ];
+  document.getElementById("sampleRules").innerHTML=samples.map(function(r){
+    return '<div class="rulecard"><div class="rh">'+r.h+'</div><div class="rw">'+r.w+'</div><div class="rsrc">'+r.s+'</div></div>';}).join("");
+  var cov=[
+    {l:"Mine location",cov:"100%",a:"have",ac:"av-have",e:"The map and find-my-mine"},
+    {l:"Commodity",cov:"100%",a:"have",ac:"av-have",e:"Commodity-based logic"},
+    {l:"Process route (HPAL, RKEF)",cov:"0% today, ~24% by curation",a:"curation",ac:"av-cur",e:"The watchlist and water demand"},
+    {l:"Basin water stress",cov:"~100%, modeled",a:"have",ac:"av-have",e:"Panel B condition"},
+    {l:"Local water quality",cov:"~0% from orbit",a:"none",ac:"av-none",e:"Needs a ground sample (M5)"},
+    {l:"Indigenous and community land",cov:"4% on land, 10% near",a:"have",ac:"av-have",e:"Which community a mine affects"},
+    {l:"EU per-facility discharge (E-PRTR)",cov:"~5%, region pack",a:"partial",ac:"av-part",e:"Real site-level quality, EU only"},
+    {l:"Licensed abstraction",cov:"request needed",a:"partial",ac:"av-part",e:"Panel A permitted tier"}
+  ];
+  document.getElementById("coverageRows").innerHTML=cov.map(function(c){
+    return '<tr><td>'+c.l+'</td><td class="tnum">'+c.cov+'</td><td class="avail '+c.ac+'">'+c.a+'</td><td class="muted">'+c.e+'</td></tr>';}).join("");
+  var banned=["the mine caused this change","X percent of stress is due to this mine","a single blended score across panels","safe or unsafe as a verdict","a predicted concentration","an unlabeled point from a coefficient band","a scarcity sentence in a disruption basin","not stressed from an annual composite","a site-precision claim from basin data","hardening typically risks into is known to release","a warranty verb such as guarantees","a named operator in a change statement without sign-off"];
+  document.getElementById("bannedList").innerHTML='<div class="rows">'+banned.map(function(b){
+    return '<div class="row"><div class="cn" style="font-weight:500;font-size:12.5px">Never '+b+'.</div><span class="ev ev-reg">BLOCK</span></div>';}).join("")+'</div>';
+}
+
+/* ---------- Decision flow (animated reveal) ---------- */
+function faTag(seq){if(!seq)return{c:"",s:""};var d=(seq.i++)*seq.step;return{c:" fa",s:' style="animation-delay:'+d+'ms"'};}
+function dsAttr(ds){return (ds!=null&&ds!==false)?(' data-step="'+ds+'"'):'';}
+function fnode(text,extra,seq,ds){var a=faTag(seq);return '<div class="fnode '+extra+a.c+'"'+dsAttr(ds)+a.s+'>'+text+'</div>';}
+function fconn(state,label,seq){var a=faTag(seq);return '<div class="fconn-wrap '+state+a.c+'"'+a.s+'><div class="fconn"></div>'+(label?'<span class="cl">'+label+'</span>':'')+'</div>';}
+function fdec(q,val,out,state,seq,ds){var a=faTag(seq);return '<div class="fdec '+state+a.c+'"'+dsAttr(ds)+a.s+'><div class="qside"><div class="q">'+q+'</div><div class="val">'+val+'</div></div><div class="fbranch"><span class="be"></span><span class="fedge">YES</span></div><div class="yesnode">'+out+'</div></div>';}
+
+function renderFlow(o,animate){
+  var d=o.decision;
+  var seq=animate?{i:0,step:150}:null;
+  _walk=[]; var wc=0;
+  function pushStep(q,val,decisionText){var ds=wc++;_walk.push({ds:ds,q:q,text:val+". "+decisionText});return ds;}
+
+  /* Branch 1: regime */
+  var ri=d.regime.indexOf("mixed")>-1?0:d.regime.indexOf("scarcity-dominant")>-1?1:d.regime.indexOf("disruption")>-1?2:d.regime.indexOf("seasonal")>-1?3:4;
+  var steps=[
+    {q:"Is annual water stress near a class edge?",val:"stress "+d.bws+"%, buffer plus or minus "+d.bufferHalf+" points",out:"Mixed / indeterminate"},
+    {q:"Is annual water stress 40% or higher?",val:"stress "+d.bws+"%",out:"Scarcity-dominant"},
+    {q:"Is it flood-driven?",val:"flood "+d.rfr+", stress "+(d.stressUnder20?"under 20%":"20% or more")+", seasonal "+(d.seasonalFlag?"set":"clear"),out:"Disruption-dominant"+(d.provisional?" (provisional)":"")},
+    {q:"Is a seasonal-scarcity flag set?",val:"driest quarter or AWARE screen: "+(d.seasonalFlag?"flag set":"no flag"),out:"Seasonal scarcity (secondary)"}
+  ];
+  var h=fnode("Site inputs","start",seq,null)+fconn("active","",seq);
+  for(var i=0;i<steps.length;i++){
+    var st=i<ri?"no":i===ri?"taken":"faded", ds=null;
+    if(i<=ri){ds=pushStep(steps[i].q,steps[i].val,i===ri?("Yes, so the water-risk regime is "+steps[i].out+"."):"No, so the tool moves on.");}
+    h+=fdec(steps[i].q,steps[i].val,steps[i].out,st,seq,ds);
+    h+=fconn(i<ri?"active":"faded",i<ri?"NO":"",seq);
+  }
+  var regimeDefaultDs=(ri===4)?pushStep("No branch matched","stress low, not flood-driven, no seasonal flag","No single water-risk type dominates here."):null;
+  h+=fnode("No dominant regime asserted","outcome "+(ri===4?"active":"faded"),seq,regimeDefaultDs);
+  document.getElementById("flowRegime").innerHTML=h;
+
+  /* Branch 2: water-use tier ladder */
+  var dt=d.demandTier,di=dt==="T1"?0:dt==="T1p"?1:dt==="T3"?2:3;
+  var dsteps=[
+    {q:"Is there a metered withdrawal figure?",val:"metered figure "+(d.metered?"available":"none"),out:"Measured figure"},
+    {q:"Is there a license or permit figure?",val:"license figure "+(d.licensed?"available":"none"),out:"From a permit"},
+    {q:"Coefficient set and capacity known?",val:"process "+(d.processKnown?"known":"unknown")+", capacity "+(d.capacityKnown?"known":"unknown"),out:"Our estimate (a range)"}
+  ];
+  var h2=fnode("No water-use figure yet","start",seq,null)+fconn("active","",seq);
+  for(var j=0;j<dsteps.length;j++){
+    var s2=j<di?"no":j===di?"taken":"faded", ds2=null;
+    if(j<=di){ds2=pushStep(dsteps[j].q,dsteps[j].val,j===di?("Yes, so the water-use figure is "+dsteps[j].out+"."):"No, so the tool keeps looking.");}
+    h2+=fdec(dsteps[j].q,dsteps[j].val,dsteps[j].out,s2,seq,ds2);
+    h2+=fconn(j<di?"active":"faded",j<di?"NO":"",seq);
+  }
+  var demandDefaultDs=(di===3)?pushStep("No usable water-use figure","no measurement, no permit, no scalable estimate","No public figure. "+(d.demandReason||"routed to disclosure")+"."):null;
+  h2+=fnode((di===3?("No data: "+(d.demandReason||"routed to disclosure")):"No data"),"outcome "+(di===3?"active":"faded"),seq,demandDefaultDs);
+  document.getElementById("flowDemand").innerHTML=h2;
+
+  /* Branch 3: watchlist route (switch) */
+  var routes=[
+    {k:"HPAL laterite",tag:"Cr(VI), Ni, Co, Mn, sulfate, pH"},
+    {k:"RKEF laterite",tag:"laterite rows + Hg, As, Se"},
+    {k:"Ore-export laterite",tag:"sediment-dominant"},
+    {k:"Sulfide / ARD",tag:"acid-rock drainage rows"},
+    {k:"Laterite, process unconfirmed",tag:"union of candidate rows"},
+    {k:"Unknown or sparse",tag:"regulatory floor only"}
+  ];
+  var wr=d.watchRoute||"";
+  var watchDs=pushStep("Which contaminants to watch for?","from the ore type and process route","The tool uses the "+wr+" list.");
+  var h3=fnode("Ore type and process route","start",seq,null)+fconn("active","",seq)+'<div class="switchchips">';
+  h3+=routes.map(function(rt){var on=wr.indexOf(rt.k)>-1;var a=faTag(seq);return '<div class="switchchip'+(on?" active":"")+a.c+'"'+(on?(' data-step="'+watchDs+'"'):'')+a.s+'><span>'+rt.k+'</span><span class="tag">'+rt.tag+'</span></div>';}).join("");
+  h3+='</div>';
+  document.getElementById("flowWatch").innerHTML=h3;
+
+  _walk.push({ds:"result",q:"The result",text:"The tool now puts together the plain result on the right."});
+  return seq?seq.i*seq.step:0;
+}
+
+/* ---------- Step-through walk ---------- */
+function resetWalkUI(){
+  walkMode=false; stopWalkPlay();
+  var fs=document.querySelectorAll(".flowstack");fs.forEach(function(f){f.classList.remove("walk");});
+  var co=document.querySelector(".col-out");if(co)co.classList.remove("masked");
+  var wt=document.getElementById("walkToggle");if(wt)wt.hidden=false;
+  var wb=document.getElementById("walkbar");if(wb)wb.hidden=true;
+  var nr=document.getElementById("narrator");if(nr)nr.hidden=true;
+}
+function enterWalk(){
+  if(!lastOutput)return;
+  walkMode=true; walkIdx=0; stopWalkPlay();
+  renderFlow(lastOutput,false);
+  document.querySelectorAll(".flowstack").forEach(function(f){f.classList.add("walk");});
+  document.getElementById("walkToggle").hidden=true;
+  document.getElementById("walkbar").hidden=false;
+  document.getElementById("narrator").hidden=false;
+  walkTo(0);
+  var sec=document.getElementById("view-model");if(sec&&sec.scrollIntoView){/* keep position */}
+}
+function exitWalk(){
+  walkMode=false; stopWalkPlay();
+  renderFlow(lastOutput,false);
+  resetWalkUI();
+}
+function walkTo(k){
+  var N=_walk.length;if(!N)return;
+  k=Math.max(0,Math.min(N-1,k));walkIdx=k;
+  var seen={};for(var i=0;i<=k;i++){seen[String(_walk[i].ds)]=true;}
+  var curDs=String(_walk[k].ds);
+  document.querySelectorAll(".flowstack [data-step]").forEach(function(el){
+    var ds=el.getAttribute("data-step");
+    el.classList.toggle("wseen",!!seen[ds]);
+    el.classList.toggle("whern",ds===curDs);
+  });
+  var cur=document.querySelector('.flowstack [data-step="'+curDs+'"]');
+  if(cur&&cur.scrollIntoView){cur.scrollIntoView({behavior:prefersReduced?"auto":"smooth",block:"nearest"});}
+  var w=_walk[k];
+  document.getElementById("narrator").innerHTML='<div class="nr-q">'+esc(w.q)+'</div><div class="nr-t">'+esc(w.text)+'</div>';
+  document.getElementById("walkcount").textContent="Step "+(k+1)+" of "+N;
+  document.getElementById("wPrev").disabled=(k===0);
+  var last=(k===N-1);
+  document.getElementById("wNext").textContent=last?"At the result":"Next ▶";
+  document.getElementById("wNext").disabled=last;
+  var co=document.querySelector(".col-out"),sv=document.querySelector(".sb-verdict");
+  if(last){if(co)co.classList.remove("masked");if(sv)sv.style.visibility="";stopWalkPlay();}
+  else{if(co)co.classList.add("masked");if(sv)sv.style.visibility="hidden";}
+}
+function walkNext(){if(walkIdx<_walk.length-1)walkTo(walkIdx+1);}
+function walkPrev(){if(walkIdx>0)walkTo(walkIdx-1);}
+function walkPlay(){
+  if(walkTimer){stopWalkPlay();return;}
+  document.getElementById("wPlay").textContent="Pause";
+  walkTimer=setInterval(function(){if(walkIdx>=_walk.length-1){stopWalkPlay();}else{walkTo(walkIdx+1);}},1700);
+}
+function stopWalkPlay(){if(walkTimer){clearInterval(walkTimer);walkTimer=null;}var p=document.getElementById("wPlay");if(p)p.textContent="Auto-play";}
+function setAq5(v){aq5=v;var a=document.getElementById("aq5"),b=document.getElementById("aq5sum");if(a)a.checked=v;if(b)b.checked=v;}
+
+/* ---------- Tabs, theme, onboarding ---------- */
+function showView(which){
+  var vmap={model:"view-model",method:"view-method"};
+  var tmap={model:"tab-model",method:"tab-method"};
+  Object.keys(vmap).forEach(function(k){
+    var on=(k===which);
+    document.getElementById(tmap[k]).setAttribute("aria-selected",on);
+    var v=document.getElementById(vmap[k]);v.classList.toggle("hidden",!on);v.hidden=!on;
+  });
+  window.scrollTo(0,0);
+}
+document.getElementById("tab-model").addEventListener("click",function(){showView("model");});
+document.getElementById("tab-method").addEventListener("click",function(){showView("method");});
+document.getElementById("analyzeBtn").addEventListener("click",analyze);
+
+var themeBtn=document.getElementById("themeBtn");
+function currentTheme(){return document.documentElement.getAttribute("data-theme")||"light";}
+function applyThemeLabel(){themeBtn.textContent=currentTheme()==="dark"?"Light":"Dark";}
+themeBtn.addEventListener("click",function(){
+  var next=currentTheme()==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme",next);
+  applyThemeLabel();
+  try{localStorage.setItem("wri-glassbox-theme",next);}catch(e){}
+});
+try{var savedTheme=localStorage.getItem("wri-glassbox-theme");if(savedTheme)document.documentElement.setAttribute("data-theme",savedTheme);}catch(e){}
+applyThemeLabel();
+
+document.getElementById("aq5").addEventListener("change",function(){setAq5(this.checked);});
+
+document.getElementById("walkToggle").addEventListener("click",enterWalk);
+document.getElementById("wExit").addEventListener("click",exitWalk);
+document.getElementById("wNext").addEventListener("click",walkNext);
+document.getElementById("wPrev").addEventListener("click",walkPrev);
+document.getElementById("wPlay").addEventListener("click",walkPlay);
+document.getElementById("wRestart").addEventListener("click",function(){stopWalkPlay();walkTo(0);});
+
+var onboard=document.getElementById("onboard");
+function openOnboard(){onboard.hidden=false;document.getElementById("obClose").focus();}
+function closeOnboard(){onboard.hidden=true;try{localStorage.setItem("wri-glassbox-onboarded","1");}catch(e){}}
+document.getElementById("obClose").addEventListener("click",closeOnboard);
+document.getElementById("helpBtn").addEventListener("click",openOnboard);
+document.getElementById("thesisHelp").addEventListener("click",openOnboard);
+onboard.addEventListener("click",function(e){if(e.target===onboard)closeOnboard();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!onboard.hidden)closeOnboard();});
+
+/* boot */
+renderPresets();
+renderMethodology();
+loadPreset("hpal");
+try{if(!localStorage.getItem("wri-glassbox-onboarded"))openOnboard();}catch(e){openOnboard();}
+</script>
+</body>
+</html>
