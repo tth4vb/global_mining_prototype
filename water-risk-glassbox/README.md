@@ -2,11 +2,12 @@
 
 An interactive, transparent water-risk screening model for critical-minerals mine sites, built for WRI leadership review. It shows how the model screens the water risk of a mine from the data available today, watch the rules fire in real time, and see exactly where the read stops because the data stops.
 
-It is a self-contained static web app. One file, no build step, no server dependencies, no external data calls (fonts load from Google Fonts).
+It is a static web app, no build step and no server dependencies. It ships as two files: `index.html` (the app) and `basin_dis.js` (a per-sub-basin river-flow lookup, see below). Fonts and map tiles load from the web; basin water values and river flow are read live per location.
 
 ## What is in it
 
-- **The model** — pick an example site or edit any input, and watch the rules decide in real time. The read on the right is tiered by source and certainty (T1 measured to T4 unknown) and ends in the one gap that remains.
+- **The model** — pick an example site, choose any location on Earth, or edit any input, and watch the rules decide in real time. Basin values (water stress, flood risk, groundwater trend, seasonal variability) are read live from Aqueduct 4.0 for the location. The read on the right is tiered by source and certainty (Measured to No data) and ends in the one gap that remains.
+- **The mine's marginal impact** — a Step 3 card that projects the mine's on-site water use as a share of the basin's natural river flow, with a confidence tier and the nature of the impact. It uses on-site withdrawal (not the total footprint) over HydroATLAS natural discharge, and flags closed or dry basins where any draw is material.
 - **Decision flow** — the same rules drawn as branching charts (regime classifier, water-use tier ladder, watchlist router), with the path your inputs follow lit up.
 - **Methodology and rules** — the full method: provenance tiers, the causal ladder, all eight rule groups, the data-coverage reality, the Aqueduct 5.0 forward look, and the banned constructions.
 - An **Aqueduct 5.0** toggle: a hypothetical future data layer that shows how the same model sharpens as water data improves.
@@ -43,5 +44,6 @@ The logic encodes the read-spine ruleset (`../research/methodology/water-risk-ru
 - Basin values (baseline water stress, riverine flood risk, groundwater trend, seasonal variability) are read live from Aqueduct 4.0 for the site location (Esri Living Atlas mirror, HydroBASINS L6). They are read-only in the UI, not editable. The preset values shipped in the file act only as an offline fallback and match the live Aqueduct reads for the three named sites.
 - Three rules rest on authored bridges, not settled doctrine: the gap-line priority order, the provisional-disruption label, and whether to show the HPAL water-use magnitude before it is primary-sourced. These are flagged in the ruleset for SME sign-off.
 - The ARD contaminant rows for the copper-cobalt case are shown generically on purpose. The exact list is Phase-3 authoring work.
+- The marginal-impact share uses `basin_dis.js`, a static lookup of natural river discharge for all 16,396 HydroBASINS level-6 sub-basins, from HydroATLAS / BasinATLAS v1.0 (Linke et al. 2019, DOI 10.1038/s41597-019-0300-6, CC-BY 4.0). It is natural (pre-abstraction) long-term mean discharge at the sub-basin pour point, used as the basin's renewable-water denominator. It is a whole-sub-basin annual number: the local reach the mine draws from, and the dry-season low flow, can be worse. Closed and dry basins (near-zero discharge) are flagged, not divided into. On-site water use for the estimate uses the direct component of Northey and Haque 2013 (about 303 m3/t Ni for HPAL, 68 for RKEF), which is far smaller than the total blue-water footprint shown in Panel A.
 
 It is a screening model, not a verdict. It never claims that one mine caused a change.

@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="basin_dis.js"></script>
 <style>
 /* ---------- Tokens: light is the committed default ---------- */
 :root{
@@ -464,6 +465,12 @@ table.dt td.avail{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-we
 .ic-why{font-size:11.5px;color:var(--ink-2);margin:9px 0 0;line-height:1.5}
 .ic-cant{font-size:12px;color:var(--ink);background:var(--surface);border:1px dashed var(--border-strong);border-radius:8px;padding:8px 10px;margin-top:10px;line-height:1.5}
 .ic-proj{font-size:11px;color:var(--ink-3);margin-top:8px;line-height:1.45;font-style:italic}
+.ic-share{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin:2px 0 11px;display:flex;flex-direction:column;gap:1px}
+.ic-share-n{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:30px;line-height:1;color:var(--ink)}
+.ic-share-n .rng{font-size:17px;color:var(--ink-3);font-weight:600;margin:0 7px;vertical-align:2px}
+.ic-share-l{font-size:12px;color:var(--ink-2)}
+.lvl-high-t{color:var(--bad)}.lvl-medium-t{color:var(--warn)}.lvl-low-t{color:var(--good)}.lvl-unknown-t{color:var(--ink-2)}
+.ic-src{font-size:11px;color:var(--ink-3);margin:9px 0 0;line-height:1.45}
 .mapcard{margin:4px 16px 6px;border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface)}
 #stressMap{height:300px;width:100%;border-radius:8px;border:1px solid var(--border);margin-top:9px;background:var(--surface-2);z-index:0}
 .leaflet-container{font-family:inherit;background:var(--surface-2)}
@@ -780,6 +787,15 @@ function coeff(commodity,process){
   if(commodity==="Ni"&&process==="RKEF") return {lo:60,hi:150,label:"RKEF, roughly 60 to 150 m3 per t Ni"};
   return null;
 }
+/* On-site (direct) water withdrawal per tonne, for the basin-impact read. This is the water
+   taken from THIS basin, much smaller than the total blue-water footprint used in Panel A,
+   because most of the HPAL footprint is embodied in off-site sulphuric acid. Northey and
+   Haque 2013 direct components: HPAL about 303, RKEF about 68 m3 per t Ni. */
+function coeffDirect(commodity,process){
+  if(commodity==="Ni"&&process==="HPAL") return {lo:250,hi:400};
+  if(commodity==="Ni"&&process==="RKEF") return {lo:50,hi:120};
+  return null;
+}
 function classOfBws(b){if(b<10)return"Low";if(b<20)return"Low-Medium";if(b<40)return"Medium-High";if(b<=80)return"High";return"Extremely High";}
 function gtdText(g){return g==="no_data"?"No data":g==="insignificant"?"No significant trend":g==="Low"?"Low decline":g==="High"?"High decline":g;}
 /* Primary-source links for Step 3 citations */
@@ -1041,36 +1057,58 @@ function runEngine(s,aq5){
      things: how much (materiality), how sure (confidence), and how (nature). It does NOT
      compute a percentage of the basin, because that needs basin available water (a runoff
      or inflow layer, Phase 2). It never asserts the mine caused a measured change. */
+  /* On-site withdrawal (what is taken from THIS basin), in m3/yr. Metered/permitted figures
+     are already local; the estimate uses the direct (on-site) coefficient, not Panel A's total
+     footprint. */
   var impLo=null, impHi=null, impKind=null, impTier=null;
-  if(meteredV>0){impLo=impHi=meteredV;impKind="withdrawal (some water returns to the basin)";impTier="measured";}
+  if(meteredV>0){impLo=impHi=meteredV;impKind="metered withdrawal";impTier="measured";}
   else if(licenseV>0){impLo=impHi=licenseV;impKind="permit ceiling, not actual use";impTier="permitted";}
-  else{var impC=coeff(s.commodity,s.process);if(impC&&capKnown){impLo=impC.lo*s.capacity;impHi=impC.hi*s.capacity;impKind="consumptive water footprint";impTier="estimated";}}
+  else{var impCd=coeffDirect(s.commodity,s.process);if(impCd&&capKnown){impLo=impCd.lo*s.capacity;impHi=impCd.hi*s.capacity;impKind="estimated on-site withdrawal";impTier="estimated";}}
   var impKnown=(impLo!=null), impMid=impKnown?(impLo+impHi)/2:null;
-  var basinTight=(stressLevel==="High"||stressLevel==="Extremely High");
-  var basinMedium=(stressLevel==="Medium-High");
-  var basinLoose=(stressLevel==="Low"||stressLevel==="Low-Medium");
-  var closedBasin=(s.aware_on&&s.aware_cf>=10);
-  var seasonalRisk=(seasonalFlag||seasonalStatus==="unassessed"||(/High/.test(s.sevLabel||"")));
   var disruptionRegime=(regime.indexOf("disruption")>-1);
-  var impLevel, impVerdict, impBadge, impConf=null;
-  if(!impKnown){impLevel="unknown";impBadge="Need water use";impVerdict="Enter or estimate the mine's water use, so the tool can judge its impact on the basin.";}
-  else if(closedBasin){impLevel="high";impBadge="Likely material";impVerdict="Likely material. This is a scarce or closed basin, where any large, steady withdrawal matters a lot.";impConf=(impTier==="measured"?"HIGH":"MED");}
-  else if(basinTight&&impMid>=10e6){impLevel="high";impBadge="Likely material";impVerdict="Likely material. The basin is already highly stressed, and this mine adds a large, steady draw on top.";impConf=(impTier==="measured"?"HIGH":"MED");}
-  else if(basinTight){impLevel="medium";impBadge="Possibly material";impVerdict="Possibly material. The basin is already stressed, though this draw is on the smaller side.";impConf="MED";}
-  else if(seasonalRisk){impLevel="medium";impBadge="Watch the dry season";impVerdict="Likely small on the annual average, but watch the dry season. Then the basin's available water drops and this steady draw becomes a bigger share.";impConf="MED";}
-  else if(basinMedium){impLevel="medium";impBadge="Possibly material";impVerdict="Possibly material. It depends on the basin's dry-season supply, which is not confirmed here.";impConf="MED";}
-  else{impLevel="low";impBadge="Small at basin scale";impVerdict="Likely a small share of the basin's water on the annual average. The dry-season and local picture still need a check.";impConf=(impTier==="measured"?"HIGH":"MED");}
+  var seasonalRisk=(seasonalFlag||seasonalStatus==="unassessed"||(/High/.test(s.sevLabel||"")));
+  /* Basin renewable water = natural discharge (HydroATLAS), m3/yr. */
+  var disMs=(typeof BASIN_DIS!=="undefined"&&s.pfaf&&BASIN_DIS[String(s.pfaf)]!=null)?BASIN_DIS[String(s.pfaf)]:null;
+  var Ba=(disMs!=null)?disMs*31556952:null;
+  var haveBa=(Ba!=null&&Ba>0), closedArid=(disMs!=null&&disMs<0.1);
+  var shareLo=null, shareHi=null;
+  if(impKnown&&haveBa){shareLo=100*impLo/Ba;shareHi=100*impHi/Ba;}
+  var impLevel, impVerdict, impBadge, impConf=null, impShare=null;
+  if(!impKnown){
+    impLevel="unknown";impBadge="Need water use";impVerdict="Enter or estimate the mine's water use, so the tool can size its share of the basin's water. Version 0.1 has an on-site estimate for nickel HPAL and RKEF only.";
+  } else if(closedArid){
+    impLevel="high";impBadge="Likely material";impConf=(impTier==="measured"?"MED":"LOW");
+    impVerdict="Likely material. This basin has little or no natural river flow (a closed or dry basin), so any steady withdrawal is a large share of what is there. A discharge estimate is not reliable here.";
+  } else if(!haveBa){
+    impLevel="unknown";impBadge="No basin flow data";impConf=(impTier==="measured"?"MED":"LOW");
+    impVerdict="The mine's on-site use is about "+(impLo===impHi?fmtVol(impLo):fmtVol(impLo)+" to "+fmtVol(impHi))+", but the tool has no natural-flow value for this sub-basin, so it cannot size the share.";
+  } else {
+    impShare=(Math.round(shareLo*10)/10)+" to "+(Math.round(shareHi*10)/10)+"% of the basin's natural river flow";
+    var sHi=shareHi;
+    if(sHi>=20){impLevel="high";impBadge="Likely material";}
+    else if(sHi>=5){impLevel="medium";impBadge="Possibly material";}
+    else if(sHi>=1){impLevel="low";impBadge="Minor at basin scale";}
+    else{impLevel="low";impBadge="Small at basin scale";}
+    impConf=(impTier==="measured"?"HIGH":impTier==="permitted"?"MED":"MED");
+    impVerdict="This mine's on-site water use is about "+impShare+". "+
+      (sHi>=20?"That is a large share, so it is likely to raise water stress here.":
+       sHi>=5?"That is a meaningful share, enough to matter for other users in the basin.":
+       "That is a small share of the annual flow.")+
+      (seasonalRisk?" In the dry season the flow drops and the share is higher.":"");
+  }
   var impDraw=impKnown?(impLo===impHi?fmtVol(impLo):(fmtVol(impLo)+" to "+fmtVol(impHi))):null;
   var impPeople=impKnown?Math.round(impMid/50):null; // ~50 m3 per person per year household use
   out.impact={
-    known:impKnown, level:impLevel, badge:impBadge, verdict:impVerdict, confidence:impConf,
-    draw:impDraw, kind:impKind, tier:impTier,
-    people:impPeople,
-    natureMain:"Withdrawal pressure. The mine consumes water that the basin also supplies to farms, people, and nature.",
+    known:impKnown, computed:(impShare!=null), level:impLevel, badge:impBadge, verdict:impVerdict, confidence:impConf,
+    share:impShare, shareLo:shareLo, shareHi:shareHi,
+    flowText:(Ba!=null)?(fmtVol(Ba)+" of natural river flow"):null, disMs:disMs, closedArid:closedArid,
+    draw:impDraw, kind:impKind, tier:impTier, people:impPeople,
+    natureMain:"Withdrawal pressure. The mine takes water on site that the basin also supplies to farms, people, and nature.",
     natureNote:disruptionRegime?"This basin's main water risk is flooding and disruption, not scarcity. So the mine's withdrawal is a secondary factor here.":null,
     contamNote:(!near)?"The mine also carries a contamination watch. That is a separate kind of impact, on water quality, shown in the watchlist below.":null,
-    why:"This call comes from the basin class ("+stressLevel+"), whether a dry-season flag is set, and the size of the mine's draw. It is a screening judgment, not a measured share.",
-    cantSay:"The exact share of the basin needs the basin's available water, from a runoff or inflow layer (the next step). The local river or aquifer the mine draws from may change far more than this basin average, which needs site hydrology.",
+    footprintNote:(impTier==="estimated")?"This uses the mine's on-site water use, which is much smaller than the total water footprint shown above. Most of the total footprint is used off site, to make sulphuric acid.":null,
+    src:(Ba!=null)?"Basin natural river flow from HydroATLAS (Linke et al. 2019). On-site water use from Northey and Haque 2013.":null,
+    cantSay:"This share uses the whole sub-basin's natural flow. The local river reach or aquifer the mine draws from may see a much larger change, which needs site hydrology. The dry-season low flow is not modeled here yet.",
     projection:"This is a projection from the mine's own water demand, not an observed change. The tool never says the mine caused a measured change."
   };
 
@@ -1443,17 +1481,24 @@ function renderOutput(o){
   var readnote='<div class="readnote">The stress level is the basin\'s Aqueduct 4.0 class. The chemical hazard for this process type is in the full technical read below.</div>';
   var im=o.impact;
   var impConfChip=im.confidence?('<span class="confbadge conf-'+im.confidence+'">confidence '+im.confidence+'</span>'):'';
-  var impDrawCell=im.known
-    ?('<div class="ic-cell"><div class="ic-k">The mine\'s draw</div><div class="ic-v">'+im.draw+'</div><div class="ic-note">'+im.kind+(im.people?('. About '+im.people.toLocaleString()+' people\'s yearly household water, at about 50 m3 per person.'):'')+'</div></div>')
-    :('<div class="ic-cell"><div class="ic-k">The mine\'s draw</div><div class="ic-v">not entered</div><div class="ic-note">Add a metered or permitted figure, or a process and capacity, so the tool can size the draw.</div></div>');
+  var shareBlock=im.computed
+    ?('<div class="ic-share"><div class="ic-share-n lvl-'+im.level+'-t">'+(Math.round(im.shareLo*10)/10)+'<span class="rng">to</span>'+(Math.round(im.shareHi*10)/10)+'%</div><div class="ic-share-l">of the basin\'s natural river flow</div></div>')
+    :'';
+  var drawCell=im.known
+    ?('<div class="ic-cell"><div class="ic-k">On-site water use</div><div class="ic-v">'+im.draw+'</div><div class="ic-note">'+im.kind+(im.people?('. About '+im.people.toLocaleString()+' people\'s yearly household water, at ~50 m3 each.'):'')+'</div></div>')
+    :('<div class="ic-cell"><div class="ic-k">On-site water use</div><div class="ic-v">not entered</div><div class="ic-note">Add a metered or permitted figure, or a nickel process and capacity, so the tool can size it.</div></div>');
+  var secondCell=im.flowText
+    ?('<div class="ic-cell"><div class="ic-k">Basin river flow</div><div class="ic-v">'+fmtVol(im.disMs*31556952)+'</div><div class="ic-note">Natural annual river flow for this sub-basin (HydroATLAS). The denominator for the share.</div></div>')
+    :('<div class="ic-cell"><div class="ic-k">Nature</div><div class="ic-v">Withdrawal pressure</div><div class="ic-note">'+im.natureMain+(im.natureNote?(' '+im.natureNote):'')+'</div></div>');
   var impactCard='<div class="impactcard">'+
     '<div class="ic-h"><span class="ic-ic">&#8594;</span><h3>What this mine would add to the basin</h3><span class="ic-badge lvl-'+im.level+'">'+im.badge+'</span>'+impConfChip+'</div>'+
+    shareBlock+
     '<p class="ic-verdict">'+im.verdict+'</p>'+
-    '<div class="ic-grid">'+impDrawCell+
-      '<div class="ic-cell"><div class="ic-k">Nature</div><div class="ic-v">Withdrawal pressure</div><div class="ic-note">'+im.natureMain+(im.natureNote?(' '+im.natureNote):'')+'</div></div>'+
-    '</div>'+
+    '<div class="ic-grid">'+drawCell+secondCell+'</div>'+
+    (im.flowText?('<p class="ic-why"><b>Nature.</b> '+im.natureMain+(im.natureNote?(' '+im.natureNote):'')+'</p>'):'')+
+    (im.footprintNote?('<p class="ic-why">'+im.footprintNote+'</p>'):'')+
     (im.contamNote?('<p class="ic-contam">'+im.contamNote+'</p>'):'')+
-    '<p class="ic-why">'+im.why+'</p>'+
+    (im.src?('<p class="ic-src">'+im.src+'</p>'):'')+
     '<div class="ic-cant"><b>What the tool cannot say yet.</b> '+im.cantSay+'</div>'+
     '<div class="ic-proj">'+im.projection+'</div>'+
   '</div>';
