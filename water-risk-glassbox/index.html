@@ -337,6 +337,31 @@ table.dt td.avail{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-we
 .switchchip.active{border-color:var(--gold);background:var(--gold-tint);color:var(--ink);box-shadow:0 0 0 1px var(--gold)}
 .switchchip .tag{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:var(--ink-3);font-weight:600;text-align:right}
 .switchchip.active .tag{color:var(--gold-strong)}
+/* hover tooltips on flow boxes */
+[data-tip]{cursor:help}
+.tiphint{border-bottom:1px dotted var(--ink-3)}
+.gb-tip{position:fixed;z-index:9999;max-width:264px;background:var(--ink);color:var(--surface);font-size:12px;line-height:1.45;padding:9px 11px;border-radius:8px;box-shadow:0 8px 26px rgba(0,0,0,.24);pointer-events:none;opacity:0;transition:opacity .12s;font-weight:400}
+.gb-tip.on{opacity:1}
+/* read-only derived basin panel */
+.hdr-note{font-weight:500;font-size:10.5px;color:var(--ink-3);letter-spacing:0;text-transform:none;margin-left:7px}
+.derived{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:2px}
+.drow{display:flex;justify-content:space-between;gap:10px;padding:8px 11px;background:var(--surface);font-size:12.5px;border-top:1px solid var(--border)}
+.drow:first-child{border-top:none}
+.drow .dk{color:var(--ink-2)}
+.drow .dv{font-weight:600;color:var(--ink);text-align:right}
+.derived-src{font-size:11.5px;color:var(--ink-3);margin-top:7px;line-height:1.45}
+.derived-note{font-size:12px;color:var(--ink-2);background:var(--surface-2);border:1px dashed var(--border);border-radius:8px;padding:8px 10px}
+.chk-inline{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:12.5px;color:var(--ink-2);cursor:pointer}
+.numin{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:"IBM Plex Mono",monospace;font-size:13px;background:var(--surface);color:var(--ink)}
+.numin::placeholder{color:var(--ink-3);font-family:"Barlow Semi Condensed",sans-serif}
+.fieldhint{font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.45}
+.srclink{color:var(--gold-strong);text-decoration:underline;text-underline-offset:2px}
+/* methodology: missing-data rows + rule codes */
+.cov-row{display:grid;grid-template-columns:minmax(150px,230px) 1fr;gap:14px;padding:11px 0;border-top:1px solid var(--border)}
+.cov-row:first-child{border-top:none}
+.cov-k{font-weight:600;font-size:13px;color:var(--ink)}
+.cov-v{font-size:13px;color:var(--ink-2);line-height:1.5}
+.rcode{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-3);font-weight:500;margin-left:6px}
 
 /* ---------- Setup panel + Analyze CTA ---------- */
 .panel.setup{max-width:720px;margin:0 auto}
@@ -378,7 +403,7 @@ table.dt td.avail{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-we
 .meters{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px 16px 4px}
 @media(max-width:560px){.meters{grid-template-columns:1fr}}
 .meter{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-3)}
-.m-h{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);font-weight:600;margin-bottom:9px}
+.m-h{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);font-weight:600;margin-bottom:9px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .m-scale{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-bottom:10px}
 .mseg{font-family:"IBM Plex Mono",monospace;font-size:8.5px;text-align:center;padding:5px 1px;border-radius:5px;background:var(--surface-2);color:var(--ink-3);border:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mseg.on{color:#fff;border-color:transparent}
@@ -387,6 +412,11 @@ table.dt td.avail{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-we
 .m-level{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:27px;line-height:1}
 .m-level.lc0{color:#2f9e7d}.m-level.lc1{color:#6f9438}.m-level.lc2{color:#b98600}.m-level.lc3{color:#d9722b}.m-level.lc4{color:#c1352a}.m-level.lvl-unc{color:var(--ink-2)}
 .m-note{font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.45}
+.mseg.band{border-style:dashed;border-color:var(--ink-3);color:var(--ink-2);background:repeating-linear-gradient(135deg,var(--surface-2),var(--surface-2) 3px,var(--surface-3) 3px,var(--surface-3) 6px)}
+.m-conf{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:600;letter-spacing:.04em;padding:2px 7px;border-radius:5px;border:1px solid;text-transform:none}
+.m-level .rng{font-size:16px;color:var(--ink-3);font-weight:600;vertical-align:2px}
+.m-unctag{font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;color:var(--warn);border:1px solid var(--warn);background:var(--t3-bg);border-radius:5px;padding:2px 6px;vertical-align:5px;letter-spacing:.03em}
+.m-unote{font-size:12px;color:var(--ink);background:var(--t3-bg);border:1px solid var(--t3);border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5}
 .m-tier{font-size:10.5px;color:var(--ink-3);margin-top:9px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .tb-screen{color:var(--ink-2);border-color:var(--border-strong);background:var(--surface-2)}
 .verdict-plain{display:flex;gap:11px;align-items:flex-start;padding:16px 16px 8px}
@@ -418,6 +448,14 @@ table.dt td.avail{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-we
 #stressMap{height:300px;width:100%;border-radius:8px;border:1px solid var(--border);margin-top:9px;background:var(--surface-2);z-index:0}
 .leaflet-container{font-family:inherit;background:var(--surface-2)}
 .leaflet-container a{color:var(--blue-link)}
+.preset.customloc{border-style:dashed}
+#locWrap{margin:2px 0 4px}
+.pickmap{height:230px;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin:4px 0 9px}
+.pickrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.pf{font-size:12px;color:var(--ink-2);display:flex;gap:6px;align-items:center}
+.pf input{width:96px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--surface);color:var(--ink)}
+.pickstat{font-size:11.5px;color:var(--ink-3)}
+.pickstat.live{color:var(--good)}
 .minetip{background:#fff !important;color:#111 !important;border:1px solid #333 !important;border-radius:6px;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;padding:1px 6px;box-shadow:none !important}
 .minetip::before{display:none !important}
 .mapfallback{display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-3);font-size:12.5px;padding:16px;text-align:center}
@@ -494,12 +532,13 @@ details.fullread .fr-body{border-top:1px solid var(--border)}
       <div class="panel setup">
         <div class="panel-h"><span class="n">Step 1</span><h2>Choose a site to analyze</h2></div>
         <div class="panel-b">
-          <div class="instr">Select an example, or edit any input. Then press <b>Analyze</b>. The model walks its decision. It shows a plain result.</div>
+          <div class="instr">Select an example, choose any location, or edit any input. Then press <b>Analyze</b>. The model walks its decision. It shows a plain result.</div>
           <div class="presets" id="presets"></div>
+          <div id="locWrap" hidden></div>
           <div id="controls"></div>
           <div class="aq5box">
-            <label class="sw"><input type="checkbox" id="aq5"><span class="track"></span><span class="sw-l">Aqueduct 5.0 data layer<small>Hypothetical future data</small></span></label>
-            <div class="hint"><span class="tag">Hypothetical</span> This is a future data layer. It uses the same rules with better inputs. It shows how the read gets sharper when finer water data arrives. It never replaces operator disclosure or a ground sample.</div>
+            <label class="sw"><input type="checkbox" id="aq5"><span class="track"></span><span class="sw-l">Aqueduct 5.0 (downscaled preview)<small>Downscaled data only</small></span></label>
+            <div class="hint"><span class="tag">What this means</span> In this tool, Aqueduct 5.0 means one thing only. It is the same Aqueduct data shown at about 10 times finer resolution (downscaled). It does not add the other parts of a future Aqueduct 5.0 release. It uses the same rules with sharper inputs, to show how the read gets clearer when finer water data arrives. It never replaces operator disclosure or a ground sample.</div>
           </div>
           <button class="cta" id="analyzeBtn">Analyze this site</button>
         </div>
@@ -577,10 +616,36 @@ details.fullread .fr-body{border-top:1px solid var(--border)}
       </table>
       </div>
 
+      <h2>When data is missing or unknown</h2>
+      <p class="muted">This is the part leadership asks about most. What does the tool do when you cannot give it a piece of information? The rule is the same every time. When an input is not known, the tool lowers its confidence and shows that clearly. It never invents a value to fill the gap.</p>
+      <div class="missing">
+        <div class="cov-row">
+          <div class="cov-k">Production capacity unknown</div>
+          <div class="cov-v">You can mark capacity as "unknown". Without a yearly capacity, the tool cannot turn a per-tonne water rate into a total volume. So it shows only the per-tonne intensity range, marks the water-use figure as "No data", and asks for the capacity. It does not guess a volume.</div>
+        </div>
+        <div class="cov-row">
+          <div class="cov-k">Process route unknown</div>
+          <div class="cov-v">The process route sets the water use per tonne, and the candidate routes for the same ore can differ too much to average. For nickel laterite, the HPAL and RKEF routes differ in total water footprint by about 17 times, which is far past the tool's limit for a single range. The tool refuses one merged number and shows an "if HPAL / if RKEF" fork, so the reader sees both cases.</div>
+        </div>
+        <div class="cov-row">
+          <div class="cov-k">No metered figure and no permit figure</div>
+          <div class="cov-v">The tool cannot state a measured or a permitted water withdrawal. If the process route and the capacity are known, it drops to a calculated estimate shown as a range. If not, it reports "No data" and routes the case to disclosure.</div>
+        </div>
+        <div class="cov-row">
+          <div class="cov-k">No site measurement for contaminants</div>
+          <div class="cov-v">The tool still shows which contaminants to watch for, based on the ore and the process. Where there is no site sample, it marks those rows "process chemistry, not site-measured". An empty watchlist is a data gap, not an all-clear.</div>
+        </div>
+        <div class="cov-row">
+          <div class="cov-k">Basin data (water stress, riverine flood risk, groundwater trend)</div>
+          <div class="cov-v">The tool always reads these values from Aqueduct 4.0 for the site location, so you do not enter them and they are never "user-missing". Groundwater trend data is thin in Aqueduct for many basins. Where Aqueduct reports no significant trend, or has no coverage, the tool shows that plainly and does not fill the gap.</div>
+        </div>
+      </div>
+      <p class="muted">The tool is a screening aid. It shows a data gap as a gap, not as safety.</p>
+
       <h2>The Aqueduct 5.0 layer</h2>
       <div class="callout">
         <span class="tag">Forward-looking and hypothetical</span>
-        <p>Aqueduct 5.0 is not released. In this tool it is a demo device. It shows how the same rules get sharper when finer water data arrives. No rule changes. Only the inputs get better. The seasonal screen changes from "not assessed" to a real dry-season class. A published error band replaces the judgment buffer. The demand-vintage flag clears where the basin model includes the local industry. The groundwater "no data" cells get a class.</p>
+        <p>In this tool, Aqueduct 5.0 means one thing. It is the same Aqueduct data shown at about 10 times finer resolution (downscaled). It is not a claim about the other parts of a future Aqueduct 5.0 release. Aqueduct 5.0 is not released. Here it is a demo device. It shows how the same rules get sharper when finer water data arrives. No rule changes. Only the inputs get better. The seasonal screen changes from "not assessed" to a real dry-season class. A published error band replaces the judgment buffer. The demand-vintage flag clears where the basin model includes the local industry. The groundwater "no data" cells get a class.</p>
         <p>Here is the honest point. Panel A barely moves. A basin dataset does not know how much water a mine takes. The license request and the ground sample stay the main gaps. The gap line gets shorter. But it never goes away.</p>
       </div>
 
@@ -590,7 +655,7 @@ details.fullread .fr-body{border-top:1px solid var(--border)}
 
       <div class="foot">
         Water-Risk Screening Ruleset v0.1 · Read spine · Derived from X1 attribution stance, M1 quality screen, M2 quantity and stress, strawman parameters, and the data coverage funnel<br>
-        Numeric thresholds are strawman values, shown to be attacked, not defaults to trust · Preset basin values are illustrative, not measurements of named sites · For internal and funder use
+        Numeric thresholds are strawman values, shown to be attacked, not defaults to trust · Basin values (water stress, flood risk, groundwater trend) are read live from Aqueduct 4.0 for the site location · For internal and funder use
       </div>
     </div>
   </section>
@@ -653,7 +718,7 @@ var PRESETS=[
    s:{commodity:"Ni",ore_type:"laterite",process:"HPAL",captive_coal:false,status:"operating",vintage:2021,
       waste_mgmt:"dam",receptor:"marine",national_std:true,capacity:60000,
       licensed:false,metered:false,measured:false,
-      bws:0.3,rfr:"Extremely High",gtd:"Low",aware_on:false,aware_cf:3,cluster_known:false,
+      bws:0.3,rfr:"Extremely High",gtd:"insignificant",aware_on:false,aware_cf:3,cluster_known:false,
       y2030r:0.3,y2050r:0.3,rfrLabel:"Extremely High",sevLabel:"Low",iavLabel:"Medium-High",gtdLabel:"insignificant trend",
       pfaf:"533000",aqsrc:"Obi Island sub-basin, pfaf 533000, Maluku Utara",aqres:"sub-basin, HydroBASINS L6",lat:-1.5614,lon:127.4210},
    aq5:{driest:5,gtd:"Low"}},
@@ -661,7 +726,7 @@ var PRESETS=[
    s:{commodity:"Ni",ore_type:"laterite",process:"RKEF",captive_coal:true,status:"operating",vintage:2019,
       waste_mgmt:"dry_stack",receptor:"marine",national_std:true,capacity:30000,
       licensed:false,metered:false,measured:false,
-      bws:6.5,rfr:"Extremely High",gtd:"Low",aware_on:false,aware_cf:3,cluster_known:false,
+      bws:6.5,rfr:"Extremely High",gtd:"insignificant",aware_on:false,aware_cf:3,cluster_known:false,
       y2030r:6.3,y2050r:6,rfrLabel:"Extremely High",sevLabel:"Low",iavLabel:"Low-Medium",gtdLabel:"insignificant trend",
       pfaf:"525015",aqsrc:"Morowali sub-basin, pfaf 525015, Sulawesi Tengah",aqres:"sub-basin, HydroBASINS L6",lat:-2.83,lon:122.16},
    aq5:{driest:9,gtd:"Low"}},
@@ -669,7 +734,7 @@ var PRESETS=[
    s:{commodity:"Cu-Co",ore_type:"sulfide",process:"sulfide_flotation",captive_coal:false,status:"operating",vintage:2015,
       waste_mgmt:"dam",receptor:"freshwater",national_std:false,capacity:40000,
       licensed:false,metered:false,measured:false,
-      bws:0.03,rfr:"Medium",gtd:"Low",aware_on:false,aware_cf:12,cluster_known:false,
+      bws:0.03,rfr:"Medium",gtd:"insignificant",aware_on:false,aware_cf:12,cluster_known:false,
       y2030r:0.2,y2050r:0.4,rfrLabel:"Medium-High",sevLabel:"Medium-High",iavLabel:"Low-Medium",gtdLabel:"insignificant trend",
       pfaf:"132946",aqsrc:"Tenke Fungurume sub-basin, pfaf 132946, Lualaba",aqres:"sub-basin, HydroBASINS L6",lat:-10.5684,lon:26.1956},
    aq5:{driest:8,gtd:"Low"}},
@@ -684,7 +749,7 @@ var PRESETS=[
    s:{commodity:"Ni",ore_type:"laterite",process:"RKEF",captive_coal:true,status:"operating",vintage:2020,
       waste_mgmt:"dry_stack",receptor:"marine",national_std:true,capacity:0,
       licensed:false,metered:false,measured:false,
-      bws:6.5,rfr:"Extremely High",gtd:"Low",aware_on:false,aware_cf:3,cluster_known:false,
+      bws:6.5,rfr:"Extremely High",gtd:"insignificant",aware_on:false,aware_cf:3,cluster_known:false,
       y2030r:6.3,y2050r:6,rfrLabel:"Extremely High",sevLabel:"Low",iavLabel:"Low-Medium",
       pfaf:"525015",aqsrc:"Morowali sub-basin, pfaf 525015, Sulawesi Tengah",aqres:"sub-basin, HydroBASINS L6",lat:-2.83,lon:122.16},
    aq5:{driest:9,gtd:"Low"}}
@@ -696,9 +761,18 @@ function coeff(commodity,process){
   return null;
 }
 function classOfBws(b){if(b<10)return"Low";if(b<20)return"Low-Medium";if(b<40)return"Medium-High";if(b<=80)return"High";return"Extremely High";}
+function gtdText(g){return g==="no_data"?"No data":g==="insignificant"?"No significant trend":g==="Low"?"Low decline":g==="High"?"High decline":g;}
+/* Primary-source links for Step 3 citations */
+var SRC={northey:"https://doi.org/10.1016/j.mineng.2014.07.006",aqueduct:"https://doi.org/10.46830/writn.23.00061"};
+function srcLink(label,url){return '<a class="srclink" href="'+url+'" target="_blank" rel="noopener">'+label+'</a>';}
+function linkifySources(s){if(!s)return s;
+  return s.replace(/Kuzma et al\.? 2023/g,srcLink("Kuzma et al. 2023",SRC.aqueduct))
+          .replace(/Northey and Haque 2013 \(CSIRO\)/g,srcLink("Northey and Haque 2013 (CSIRO)",SRC.northey));
+}
 function receptorWord(r){return r==="marine"?"the coastal water that this community uses":r==="groundwater"?"the groundwater that this community uses":"the river that this community uses";}
 function oom(v){var e=Math.floor(Math.log10(v));var m=(v/Math.pow(10,e)).toFixed(1);return{m:m,e:e};}
 function fmtBand(lo,hi,cap){var a=oom(lo*cap),b=oom(hi*cap);if(a.e===b.e)return a.m+" to "+b.m+" x 10^"+a.e+" m3/yr";return a.m+" x 10^"+a.e+" to "+b.m+" x 10^"+b.e+" m3/yr";}
+function fmtVol(v){if(!(v>0))return null;if(v>=1e9)return (v/1e9).toFixed(v>=1e10?0:1)+" billion m3/yr";if(v>=1e6)return (v/1e6).toFixed(v>=1e7?0:1)+" million m3/yr";return Math.round(v).toLocaleString()+" m3/yr";}
 
 /* ---------- ENGINE ---------- */
 function runEngine(s,aq5){
@@ -708,6 +782,7 @@ function runEngine(s,aq5){
 
   var sevMult={"Low":1.3,"Medium":1.8,"High":2.5,"Extremely High":3.2};
   var driest=null, awareCf=(s.aware_on?s.aware_cf:null), bufferHalf=10, gtd=s.gtd, vintageResolved=false;
+  var capKnown=(s.capacity>0 && !s.capacityUnknown);
   if(aq5){
     driest=(s._presetAq5&&!s._edited&&typeof s._presetAq5.driest==="number")?s._presetAq5.driest:null;
     awareCf=(s._presetAq5&&!s._edited&&typeof s._presetAq5.aware_cf==="number")?s._presetAq5.aware_cf:awareCf;
@@ -762,19 +837,22 @@ function runEngine(s,aq5){
   secondaryFlags.push({t:"quality watch",warn:false});
   out.regime={label:regime,provisional:provisional,confidence:confidence,flags:secondaryFlags,seasonalStatus:seasonalStatus};
 
+  var meteredV=(typeof s.meteredValue==="number"&&s.meteredValue>0)?s.meteredValue:0;
+  var licenseV=(typeof s.licenseValue==="number"&&s.licenseValue>0)?s.licenseValue:0;
+  var metered=meteredV>0, licensed=licenseV>0;
   var A={};
-  if(s.metered){
-    A={tier:"T1",statement:"This mine uses a metered volume of water (a real measured figure for this operation).",figure:"Metered",short:"measured for this operation"};
-    log("R-DEMAND-01",true,"a metered withdrawal figure exists","Panel A: T1 measured");
+  if(metered){
+    A={tier:"T1",statement:"This mine reports a metered withdrawal of "+fmtVol(meteredV)+". This is a real measured figure for this operation.",figure:fmtVol(meteredV),short:"measured for this operation"};
+    log("R-DEMAND-01",true,"a metered withdrawal figure of "+fmtVol(meteredV)+" was entered","Panel A: T1 measured");
   } else {
-    log("R-DEMAND-01",false,"no metered figure exists",null);
-    if(s.licensed){
-      A={tier:"T1p",statement:"This mine is licensed to withdraw a permitted volume of water. This reflects the permit, not measured use. Permitted is not the same as enforced.",figure:"Licensed",short:"permit figure, not metered"};
-      log("R-DEMAND-02",true,"a water-abstraction license figure exists","Panel A: T1p permitted");
+    log("R-DEMAND-01",false,"no metered figure entered",null);
+    if(licensed){
+      A={tier:"T1p",statement:"This mine holds a permit to withdraw up to "+fmtVol(licenseV)+". This is the permit limit, not measured use. Permitted is not the same as used.",figure:fmtVol(licenseV),short:"permit limit, not metered"};
+      log("R-DEMAND-02",true,"a permitted withdrawal figure of "+fmtVol(licenseV)+" was entered","Panel A: T1p permitted");
     } else {
-      log("R-DEMAND-02",false,"no license figure (portal blocked, request needed from WRI Indonesia)",null);
+      log("R-DEMAND-02",false,"no permit figure entered",null);
       var c=coeff(s.commodity,s.process);
-      if(c&&s.capacity){
+      if(c&&capKnown){
         A={tier:"T3",statement:"Estimated at "+fmtBand(c.lo,c.hi,s.capacity)+".",band:c.label,grade:"ore-grade assumption 1.0 to 1.8% Ni, carried in the band",split:true,figure:fmtBand(c.lo,c.hi,s.capacity),short:c.label,reasonShort:"estimated band",sourceCite:"Northey and Haque 2013 (CSIRO)",sourceNote:"This is a total blue-water footprint (on-site plus supply chain), from Northey and Haque 2013 (CSIRO). The central figure is about 1,700 m3 per t Ni for HPAL and about 100 for RKEF. It does not count once-through cooling or seawater, which are site-specific and can be higher."};
         log("R-DEMAND-03",true,"process "+s.process+" confirmed, capacity "+s.capacity.toLocaleString()+" t/yr","Panel A: T3 band ("+c.label+"), not a point");
         log("R-DEMAND-04",true,"coefficient sourced from Northey and Haque 2013 (CSIRO)","flag: blue-water footprint, direct plus embodied. HPAL about 1,700, RKEF about 100 m3 per t Ni");
@@ -784,8 +862,8 @@ function runEngine(s,aq5){
            forkNote:"Each is a process-type water footprint from Northey and Haque 2013 (CSIRO), not this site. Which process is chosen is the single largest water decision for this project.",
            route:"M4",figure:"Not one figure",short:"process not confirmed",reasonShort:"candidate band too wide (17x), refused"};
         log("R-DEMAND-05",true,"process unknown: the candidate-process band spans about 17x, wider than the 10x limit","Panel A: T4. The tool shows the fork (if HPAL / if RKEF), never one merged number");
-      } else if(c&&!s.capacity){
-        A={tier:"T4",statement:"The production capacity is not public, so the tool cannot scale the per-tonne water use into an annual figure.",
+      } else if(c&&!capKnown){
+        A={tier:"T4",statement:"The production capacity is not known, so the tool cannot scale the per-tonne water use into an annual figure.",
            intensity:c.label,route:"M4",figure:"Per tonne only",short:"capacity unknown",reasonShort:"capacity unknown"};
         log("R-DEMAND-06",true,"process known ("+s.process+"), but capacity is not public","Panel A: T4. The tool shows the per-tonne intensity and asks for the capacity");
       } else {
@@ -797,13 +875,13 @@ function runEngine(s,aq5){
   out.A=A;
 
   out.B={
-    bwsClass:classOfBws(s.bws),bws:s.bws,rfr:s.rfr,gtd:gtd,
+    bwsClass:classOfBws(s.bws),bws:s.bws,rfr:s.rfr,rfrLabel:s.rfrLabel||s.rfr,gtd:gtd,
     seasonalCaveat:(s.bws<20)?("On an annual basis this basin is not short of water (baseline stress "+classOfBws(s.bws)+", "+s.bws+"%). But an annual average can hide a dry-season shortage. "+(seasonalStatus==="unassessed"?"The tool has not assessed the dry-season conditions.":seasonalFlag?"A seasonal-scarcity flag is set.":"The dry-season screen is clear.")):null,
     vintageFlag:(vintageState==="unassessed")?"The tool has not assessed the demand vintage. The basin model may be older than the local industry.":(vintageResolved?"The tool has resolved the demand vintage. The basin model now includes the local industry.":null),
     regime:regime,provisional:provisional
   };
   log("R-COND-03",s.bws<20,"annual baseline stress is "+classOfBws(s.bws),"Panel B: annual-basis sentence with the seasonal caveat, no negative asserted");
-  log("R-COND-04",true,"groundwater trend is "+(gtd==="no_data"?"not covered":gtd),"Panel B: groundwater rendered as its own line"+(gtd==="no_data"?" (no data, T4)":" (T2)"));
+  log("R-COND-04",true,"groundwater trend is "+(gtd==="no_data"?"not covered":gtdText(gtd)),"Panel B: groundwater rendered as its own line"+(gtd==="no_data"?" (no data, T4)":" (T2)"));
 
   out.C={vintage:s.vintage,tier:"C0",status:s.status};
   log("R-LADDER-01",true,"operations began "+s.vintage+", no change analysis has been run","Panel C: C0, not established, with the evidence needed to climb");
@@ -864,9 +942,9 @@ function runEngine(s,aq5){
     seasonalFlag:seasonalFlag,seasonalStatus:seasonalStatus,
     stressUnder20:(s.bws<20),floodHigh:floodHigh,
     disrupt:disrupt,provisional:provisional,regime:regime,
-    demandTier:A.tier,demandReason:A.reasonShort||null,metered:!!s.metered,licensed:!!s.licensed,
-    hasCoeff:!!(coeff(s.commodity,s.process)&&s.capacity),
-    coeffExists:!!coeff(s.commodity,s.process),capacityKnown:s.capacity>0,processKnown:(s.process!=="unknown"),
+    demandTier:A.tier,demandReason:A.reasonShort||null,metered:metered,licensed:licensed,meteredFig:(metered?fmtVol(meteredV):null),licenseFig:(licensed?fmtVol(licenseV):null),
+    hasCoeff:!!(coeff(s.commodity,s.process)&&capKnown),
+    coeffExists:!!coeff(s.commodity,s.process),capacityKnown:capKnown,processKnown:(s.process!=="unknown"),
     watchRoute:watchRouteLabel
   };
 
@@ -901,6 +979,23 @@ function runEngine(s,aq5){
   else if(regime.indexOf("disruption")>-1) stressNote="The scarcity is low. But flooding and disruption are the main water risk here.";
   else if(inBuffer) stressNote="This basin sits near an Aqueduct class edge, so the regime read is mixed. The stress class itself is "+stressLevel+".";
   else if(aq5) stressNote="At this finer resolution the dry-season screen is clear.";
+  /* Uncertainty band for the high-level water-stress outcome. The basin class is a real value,
+     but the honest read is a range when the dry season is not assessed, the value sits near a
+     class edge, or the projection is higher. Missing mine water use widens the overall doubt. */
+  var _ord5=["Low","Low-Medium","Medium-High","High","Extremely High"];
+  function _up(lvl,n){var i=_ord5.indexOf(lvl);if(i<0)i=0;return _ord5[Math.min(_ord5.length-1,i+n)];}
+  var _base=stressLevel,_upper=stressLevel,_ur=[];
+  var _y50=(typeof s.y2050r==="number")?s.y2050r:Math.round(s.bws*1.3*10)/10;
+  var _proj=classOfBws(_y50);
+  if(_ord5.indexOf(_proj)>_ord5.indexOf(_upper)){_upper=_proj;_ur.push("the 2050 projection is higher");}
+  if(seasonalStatus==="unassessed"){var _dl=_up(_base,1);if(_ord5.indexOf(_dl)>_ord5.indexOf(_upper))_upper=_dl;_ur.push("the dry season is not assessed and could be worse than the annual level");}
+  else if(seasonalFlag){var _dl2=_up(_base,1);if(_ord5.indexOf(_dl2)>_ord5.indexOf(_upper))_upper=_dl2;_ur.push("a dry-season scarcity flag is set");}
+  if(inBuffer){var _el=_up(_base,1);if(_ord5.indexOf(_el)>_ord5.indexOf(_upper))_upper=_el;_ur.push("the value sits near a class edge");}
+  var _demandUnknown=(A.tier==="T4");
+  var _rangeUncertain=(_ord5.indexOf(_upper)>_ord5.indexOf(_base));
+  var _uNote="";
+  if(_rangeUncertain)_uNote="Today the basin reads "+_base+". It could be as high as "+_upper+", because "+_ur.join(", and ")+".";
+  if(_demandUnknown)_uNote=(_uNote?_uNote+" ":"")+"You gave no water-use figure for the mine, so how hard this mine would press on the basin is not known. The level here is the basin's own state, not the mine's share.";
   var qLevel,qNote="";
   if(near){qLevel="Low";qNote="water balance is the main risk for this commodity, not chemistry.";}
   else if(s.ore_type==="laterite"&&s.process==="ore_export"){qLevel="Medium";qNote="sediment-dominant, with geogenic metals in ultramafic terrain.";}
@@ -910,6 +1005,7 @@ function runEngine(s,aq5){
   else {qLevel="Medium";}
   out.summary={
     stress:{level:stressLevel,note:stressNote,tier:"T2",tierLabel:"Aqueduct 4.0 sub-basin class",
+            band:{from:_base,to:_upper},uncertain:(_rangeUncertain||_demandUnknown),rangeUncertain:_rangeUncertain,demandUnknown:_demandUnknown,confidence:out.regime.confidence,uNote:_uNote,
             pct:s.bws,cat:classOfBws(s.bws),real:(!!s.aqsrc&&!s._edited),edited:!!s._edited,
             y2030:(typeof s.y2030r==="number")?s.y2030r:Math.round(s.bws*1.15*10)/10,
             y2050:(typeof s.y2050r==="number")?s.y2050r:Math.round(s.bws*1.3*10)/10,
@@ -926,6 +1022,7 @@ function runEngine(s,aq5){
 
 /* ---------- RENDER ---------- */
 var state=null, activePreset=null, aq5=false, firstPaint=true, traceFilter="all", lastOutput=null, analyzed=false;
+var customMode=false, _pickMap=null, _pickMarker=null;
 var _walk=[], walkMode=false, walkIdx=0, walkTimer=null;
 var prefersReduced=(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
@@ -938,8 +1035,11 @@ function renderPresets(){
   el.innerHTML=PRESETS.map(function(p){
     return '<button class="preset" data-id="'+p.id+'" aria-pressed="'+(activePreset===p.id)+'">'+
       '<span class="p-ic">'+p.ic+'</span><span><span class="p-t">'+p.title+'</span><span class="p-s">'+p.sub+'</span></span></button>';
-  }).join("");
-  el.querySelectorAll(".preset").forEach(function(b){b.addEventListener("click",function(){loadPreset(b.getAttribute("data-id"));});});
+  }).join("")+
+    '<button class="preset customloc" id="customLocBtn" aria-pressed="'+(customMode?"true":"false")+'">'+
+      '<span class="p-ic">◎</span><span><span class="p-t">Any location</span><span class="p-s">Pick a point, read Aqueduct 4.0</span></span></button>';
+  el.querySelectorAll(".preset[data-id]").forEach(function(b){b.addEventListener("click",function(){loadPreset(b.getAttribute("data-id"));});});
+  var cb=document.getElementById("customLocBtn");if(cb)cb.addEventListener("click",enterCustomLocation);
 }
 function seg(label,key,opts){
   var cur=state[key];
@@ -947,6 +1047,7 @@ function seg(label,key,opts){
     opts.map(function(o){var v=(typeof o==="object")?o.v:o;var t=(typeof o==="object")?o.t:o;
       return '<button data-v="'+v+'" aria-pressed="'+(cur===v)+'">'+t+'</button>';}).join("")+'</div></div>';
 }
+function drow(k,v){return '<div class="drow"><span class="dk">'+k+'</span><span class="dv">'+v+'</span></div>';}
 function renderControls(){
   var c=document.getElementById("controls");
   var html="";
@@ -959,20 +1060,39 @@ function renderControls(){
   }
   html+=seg("Receptor","receptor",[{v:"marine",t:"Marine"},{v:"freshwater",t:"Freshwater"},{v:"groundwater",t:"Groundwater"}]);
   html+=seg("Tailings","waste_mgmt",[{v:"dam",t:"Dam"},{v:"dry_stack",t:"Dry stack"},{v:"DSTP",t:"Deep-sea"},{v:"co_disposal",t:"Co-disposal"}]);
-  html+='<div class="field"><label>Production capacity (t metal per year)</label><div class="rangewrap"><input type="range" id="cap" min="0" max="120000" step="5000" value="'+state.capacity+'"><span class="rangeval tnum" id="capv">'+state.capacity.toLocaleString()+'</span></div></div>';
+  html+='<div class="field"><label>Production capacity (t metal per year)</label>'+
+    (state.capacityUnknown
+      ? '<div class="derived-note">Capacity marked unknown. The tool shows the per-tonne water intensity only, and asks for the capacity. It does not guess a volume.</div>'
+      : '<div class="rangewrap"><input type="range" id="cap" min="0" max="120000" step="5000" value="'+(state.capacity||0)+'"><span class="rangeval tnum" id="capv">'+(state.capacity||0).toLocaleString()+'</span></div>')+
+    '<label class="chk-inline"><input type="checkbox" id="capunk" '+(state.capacityUnknown?"checked":"")+'> I do not know the production capacity</label></div>';
 
-  html+='<div class="grouphdr">The basin</div>';
-  html+='<div class="field"><label>Baseline water stress (annual)</label><div class="rangewrap"><input type="range" id="bws" min="0" max="100" step="1" value="'+state.bws+'"><span class="rangeval tnum" id="bwsv">'+state.bws+'% '+classOfBws(state.bws)+'</span></div></div>';
-  html+=seg("Riverine flood risk","rfr",[{v:"Low",t:"Low"},{v:"Medium",t:"Med"},{v:"High",t:"High"},{v:"Extremely High",t:"Extreme"}]);
-  html+='<label class="sw"><input type="checkbox" id="awon" '+(state.aware_on?"checked":"")+'><span class="track"></span><span class="sw-l">AWARE worst-month CF known<small>Route B for the seasonal screen</small></span></label>';
+  html+='<div class="grouphdr">The basin <span class="hdr-note">read from Aqueduct 4.0, not editable</span></div>';
+  if(state._custom&&typeof state.lat!=="number"){
+    html+='<div class="derived-note">Place your mine on the map above, or type coordinates, to read Aqueduct 4.0 for that location. The four basin values fill in from Aqueduct.</div>';
+  } else {
+    html+='<div class="derived">'+
+      drow("Baseline water stress",state.bws+'% '+classOfBws(state.bws))+
+      drow("Riverine flood risk",(state.rfrLabel||state.rfr))+
+      drow("Groundwater trend",gtdText(state.gtd))+
+      (state.sevLabel?drow("Seasonal variability",state.sevLabel):'')+
+    '</div>';
+    html+='<div class="derived-src">'+(state.aqsrc?('Source: '+state.aqsrc+'. '):'')+'These values come from Aqueduct 4.0 for the sub-basin at this location. You do not enter them, and you cannot edit them. To use a different basin, choose another site or location.</div>';
+  }
+
+  html+='<div class="grouphdr">Water-use figures <span class="hdr-note">enter a number only if you have one</span></div>';
+  html+='<div class="field"><label>Metered withdrawal, if measured (m3 per year)</label>'+
+    '<input class="numin" type="number" id="meterv" min="0" step="100000" value="'+((typeof state.meteredValue==="number"&&state.meteredValue>0)?state.meteredValue:"")+'" placeholder="none, leave blank">'+
+    '<div class="fieldhint">A real measured volume for this operation. This is the most trustworthy figure. Leave blank if you do not have one.</div></div>';
+  html+='<div class="field"><label>Permitted withdrawal, if licensed (m3 per year)</label>'+
+    '<input class="numin" type="number" id="licv" min="0" step="100000" value="'+((typeof state.licenseValue==="number"&&state.licenseValue>0)?state.licenseValue:"")+'" placeholder="none, leave blank">'+
+    '<div class="fieldhint">The maximum the permit allows. It is a ceiling, not measured use. Leave blank if you do not have one.</div></div>';
+
+  html+='<div class="grouphdr">What we have on this site</div>';
+  html+='<label class="sw"><input type="checkbox" id="awon" '+(state.aware_on?"checked":"")+'><span class="track"></span><span class="sw-l">AWARE worst-month CF known<small>Runs Route B of the seasonal screen</small></span></label>';
   if(state.aware_on){
     html+='<div class="field"><label>AWARE worst-month CF</label><div class="rangewrap"><input type="range" id="cf" min="0" max="100" step="1" value="'+state.aware_cf+'"><span class="rangeval tnum" id="cfv">'+state.aware_cf+'</span></div></div>';
   }
-  html+=seg("Groundwater trend","gtd",[{v:"no_data",t:"No data"},{v:"Low",t:"Low"},{v:"High",t:"High decline"}]);
-
-  html+='<div class="grouphdr">What we have on this site</div>';
   html+='<label class="sw"><input type="checkbox" id="natl" '+(state.national_std?"checked":"")+'><span class="track"></span><span class="sw-l">National standards transcribed<small>Adds a national benchmark column</small></span></label>';
-  html+='<label class="sw"><input type="checkbox" id="lic" '+(state.licensed?"checked":"")+'><span class="track"></span><span class="sw-l">License figure available<small>Unlocks the permitted tier</small></span></label>';
   html+='<label class="sw"><input type="checkbox" id="clk" '+(state.cluster_known?"checked":"")+'><span class="track"></span><span class="sw-l">Cluster demand known<small>Runs the vintage check</small></span></label>';
   html+='<label class="sw"><input type="checkbox" id="meas" '+(state.measured?"checked":"")+'><span class="track"></span><span class="sw-l">A ground sample exists<small>Turns off the empty state</small></span></label>';
   c.innerHTML=html;
@@ -982,18 +1102,21 @@ function renderControls(){
     sg.querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){setField(key,b.getAttribute("data-v"));});});
   });
   bindChk("cc","captive_coal");bindChk("awon","aware_on");bindChk("natl","national_std");
-  bindChk("lic","licensed");bindChk("clk","cluster_known");bindChk("meas","measured");
+  bindChk("clk","cluster_known");bindChk("meas","measured");bindChk("capunk","capacityUnknown");
+  bindNum("meterv","meteredValue");bindNum("licv","licenseValue");
   bindRange("cap","capacity",function(v){return parseInt(v,10);},"capv",function(v){return v.toLocaleString();});
-  bindRange("bws","bws",function(v){return parseInt(v,10);},"bwsv",function(v){return v+"% "+classOfBws(v);});
   bindRange("cf","aware_cf",function(v){return parseInt(v,10);},"cfv",function(v){return ""+v;});
 }
 function bindChk(id,key){var e=document.getElementById(id);if(e)e.addEventListener("change",function(){setField(key,e.checked);});}
+/* Number input that does not re-render on each keystroke, so the field keeps focus. */
+function bindNum(id,key){var e=document.getElementById(id);if(!e)return;
+  e.addEventListener("input",function(){var v=parseFloat(e.value);state[key]=(isFinite(v)&&v>0)?v:null;markCustom();});
+}
 function clearBasinProvenance(){state._edited=true;state.aqsrc=null;state.pfaf=null;state.y2030r=null;state.y2050r=null;state.rfrLabel=null;state.sevLabel=null;state.iavLabel=null;}
 function bindRange(id,key,parse,vid,fmt){var e=document.getElementById(id);if(!e)return;
-  e.addEventListener("input",function(){var v=parse(e.value);state[key]=v;var lbl=document.getElementById(vid);if(lbl)lbl.textContent=fmt(v);if(id==="bws"||id==="cf")clearBasinProvenance();markCustom();});
+  e.addEventListener("input",function(){var v=parse(e.value);state[key]=v;var lbl=document.getElementById(vid);if(lbl)lbl.textContent=fmt(v);markCustom();});
 }
 function setField(key,val){state[key]=val;
-  if(key==="rfr"||key==="gtd"||key==="aware_on")clearBasinProvenance();
   if(key==="process"&&(val==="HPAL"||val==="RKEF"||val==="ore_export")){state.ore_type="laterite";state.commodity="Ni";}
   if(key==="process"&&val==="sulfide_flotation"){state.ore_type="sulfide";state.commodity="Cu-Co";}
   if(key==="ore_type"&&val==="sulfide"){state.process="sulfide_flotation";state.commodity="Cu-Co";}
@@ -1002,10 +1125,97 @@ function setField(key,val){state[key]=val;
   markCustom();renderControls();
 }
 function markCustom(){activePreset=null;document.querySelectorAll(".preset").forEach(function(b){b.setAttribute("aria-pressed","false");});}
+function shortAq(l){return (l||"").split(" (")[0].replace(/\s*-\s*/g,"-").trim();}
+function rfrFromCat(c){var m={0:"Low",1:"Low-Medium",2:"Medium-High",3:"High",4:"Extremely High"};return m[c]!=null?m[c]:"Low";}
+/* Derive the basin values live from Aqueduct 4.0 for the site location. The preset values
+   (already the Aqueduct reads) stay as the fallback if the network is not available. */
+function refreshBasinFromAqueduct(){
+  var la=state.lat,lo=state.lon;if(typeof la!=="number"||typeof lo!=="number")return;
+  var tokLa=la,tokLo=lo;
+  var url="https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/aqueduct_water_risk/FeatureServer/1/query"+
+    "?geometry="+lo+","+la+"&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects"+
+    "&outFields=bws_raw,bws_cat,rfr_cat,rfr_label,gtd_cat,gtd_label,sev_label,iav_label,pfaf_id&returnGeometry=false&f=json";
+  fetch(url).then(function(r){return r.json();}).then(function(d){
+    if(state.lat!==tokLa||state.lon!==tokLo)return; // the site changed while the request was in flight
+    var f=d&&d.features&&d.features[0];if(!f||!f.attributes)return;var a=f.attributes;
+    if(typeof a.bws_raw==="number"){var v=a.bws_raw*100;state.bws=v>=10?Math.round(v):v>=1?Math.round(v*10)/10:Math.round(v*100)/100;}
+    if(a.rfr_cat!=null){state.rfr=rfrFromCat(a.rfr_cat);state.rfrLabel=state.rfr;}
+    if(a.gtd_cat!=null||a.gtd_label){state.gtd=(a.gtd_cat===-9999||/insignificant/i.test(a.gtd_label||""))?"insignificant":(a.gtd_cat<=1?"Low":"High");}
+    if(a.sev_label)state.sevLabel=shortAq(a.sev_label);
+    if(a.iav_label)state.iavLabel=shortAq(a.iav_label);
+    if(a.pfaf_id)state.pfaf=String(a.pfaf_id);
+    if(state._custom&&a.pfaf_id)state.aqsrc="sub-basin pfaf "+a.pfaf_id+" at "+tokLa.toFixed(3)+", "+tokLo.toFixed(3);
+    state.aqLive=true;
+    var ps=document.getElementById("pickStat");if(ps){ps.textContent="Read from Aqueduct 4.0"+(a.pfaf_id?(" (sub-basin pfaf "+a.pfaf_id+")"):"");ps.classList.add("live");}
+    renderControls();
+    if(analyzed&&!walkMode)runAndRender(false);
+  }).catch(function(){var ps=document.getElementById("pickStat");if(ps){ps.textContent="Could not read Aqueduct (check the connection)";ps.classList.remove("live");}});
+}
 function loadPreset(id){
   var p=PRESETS.find(function(x){return x.id===id;});
-  state=JSON.parse(JSON.stringify(p.s));state._presetAq5=p.aq5;activePreset=id;
-  renderPresets();renderControls();
+  state=JSON.parse(JSON.stringify(p.s));state._presetAq5=p.aq5;activePreset=id;customMode=false;
+  renderPresets();renderLocationPicker();renderControls();
+  refreshBasinFromAqueduct();
+}
+/* Choose any point on Earth and read its Aqueduct 4.0 basin values. */
+function enterCustomLocation(){
+  customMode=true;activePreset=null;
+  var base=JSON.parse(JSON.stringify(PRESETS[0].s));
+  Object.assign(base,{commodity:"Ni",ore_type:"laterite",process:"unknown",captive_coal:false,receptor:"freshwater",waste_mgmt:"dam",
+    capacityUnknown:true,national_std:false,licensed:false,cluster_known:false,measured:false,metered:false,aware_on:false,aware_cf:3,
+    bws:0,rfr:"Low",rfrLabel:"Low",gtd:"no_data",sevLabel:null,iavLabel:null,pfaf:null,aqsrc:null,aqres:null,
+    y2030r:null,y2050r:null,lat:null,lon:null,aqLive:false,_custom:true});
+  state=base;state._presetAq5={};
+  renderPresets();renderLocationPicker();renderControls();
+}
+function renderLocationPicker(){
+  var w=document.getElementById("locWrap");if(!w)return;
+  if(!customMode){w.hidden=true;w.innerHTML="";if(_pickMap){try{_pickMap.remove();}catch(e){}_pickMap=null;_pickMarker=null;}return;}
+  w.hidden=false;
+  var placed=(typeof state.lat==="number"&&typeof state.lon==="number");
+  w.innerHTML='<div class="grouphdr">Your location <span class="hdr-note">click the map, or type coordinates</span></div>'+
+    '<div id="pickMap" class="pickmap"></div>'+
+    '<div class="pickrow">'+
+      '<label class="pf">Lat <input id="latIn" type="number" step="0.0001" value="'+(placed?state.lat:"")+'" placeholder="-2.83"></label>'+
+      '<label class="pf">Lon <input id="lonIn" type="number" step="0.0001" value="'+(placed?state.lon:"")+'" placeholder="122.16"></label>'+
+      '<button class="sb-btn" id="latlonGo">Read Aqueduct</button>'+
+      '<span class="pickstat'+(state.aqLive?" live":"")+'" id="pickStat">'+(placed?(state.aqLive?"Read from Aqueduct 4.0":"Reading Aqueduct 4.0..."):"No point placed yet")+'</span>'+
+    '</div>';
+  initPickMap();
+  var go=document.getElementById("latlonGo");
+  if(go)go.addEventListener("click",function(){
+    var la=parseFloat(document.getElementById("latIn").value),lo=parseFloat(document.getElementById("lonIn").value);
+    if(isFinite(la)&&isFinite(lo)&&la>=-90&&la<=90&&lo>=-180&&lo<=180)setCustomPoint(la,lo);
+    else{var ps=document.getElementById("pickStat");if(ps){ps.textContent="Enter a latitude from -90 to 90 and a longitude from -180 to 180";ps.classList.remove("live");}}
+  });
+}
+function initPickMap(){
+  var el=document.getElementById("pickMap");if(!el)return;
+  if(typeof L==="undefined"){el.innerHTML='<div class="mapfallback">The map needs an internet connection to load.</div>';return;}
+  if(_pickMap){try{_pickMap.remove();}catch(e){}_pickMap=null;_pickMarker=null;}
+  var placed=(typeof state.lat==="number");
+  var map=L.map(el,{zoomControl:true,attributionControl:true,scrollWheelZoom:false,worldCopyJump:true}).setView(placed?[state.lat,state.lon]:[5,20],placed?7:2);
+  _pickMap=map;
+  var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  var tiles=dark?"https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}":"https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+  L.tileLayer(tiles,{maxZoom:16,attribution:"Esri, HERE, Garmin, FAO, NOAA, USGS"}).addTo(map);
+  if(placed)placePickMarker(state.lat,state.lon);
+  map.on("click",function(e){setCustomPoint(e.latlng.lat,e.latlng.lng);});
+  setTimeout(function(){try{map.invalidateSize();}catch(e){}},120);
+}
+function placePickMarker(la,lo){
+  if(!_pickMap)return;
+  if(_pickMarker){try{_pickMap.removeLayer(_pickMarker);}catch(e){}}
+  _pickMarker=L.circleMarker([la,lo],{radius:7,color:"#111",weight:2,fillColor:"#d9722b",fillOpacity:1}).addTo(_pickMap).bindTooltip("your mine",{permanent:true,direction:"right",className:"minetip",offset:[8,0]});
+}
+function setCustomPoint(la,lo){
+  la=Math.round(la*10000)/10000;lo=Math.round(lo*10000)/10000;
+  state.lat=la;state.lon=lo;state._custom=true;state.aqLive=false;state.aqsrc=null;state.pfaf=null;
+  placePickMarker(la,lo);if(_pickMap)_pickMap.panTo([la,lo]);
+  var li=document.getElementById("latIn"),ln=document.getElementById("lonIn");if(li)li.value=la;if(ln)ln.value=lo;
+  var ps=document.getElementById("pickStat");if(ps){ps.textContent="Reading Aqueduct 4.0...";ps.classList.remove("live");}
+  refreshBasinFromAqueduct();
+  renderControls();
 }
 
 function renderTrace(o){
@@ -1037,16 +1247,21 @@ function regimeRisk(label){
 function meterHtml(title,sum){
   var order=["Low","Low-Medium","Medium-High","High","Extremely High"];
   var idx=order.indexOf(sum.level); if(idx<0)idx=0;
+  var toIdx=(sum.band&&sum.rangeUncertain)?order.indexOf(sum.band.to):idx; if(toIdx<idx)toIdx=idx;
   var segs=order.map(function(lab,k){
-    var on=(k<=idx),act=(k===idx);
-    return '<span class="mseg lc'+k+(on?" on":"")+(act?" act":"")+'">'+lab+'</span>';
+    var on=(k<=idx),act=(k===idx),band=(k>idx&&k<=toIdx);
+    return '<span class="mseg lc'+k+(on?" on":"")+(act?" act":"")+(band?" band":"")+'">'+lab+'</span>';
   }).join("");
   var lvlCls="lc"+idx;
   var tierBadge=sum.tier==="T2"?tb("T2"):'<span class="tb tb-screen">Screening</span>';
-  return '<div class="meter"><div class="m-h">'+title+'</div>'+
+  var levelText=(sum.rangeUncertain&&sum.band)?(sum.band.from+' <span class="rng">to</span> '+sum.band.to):sum.level;
+  var conf=sum.confidence?('<span class="m-conf conf-'+sum.confidence+'">confidence '+sum.confidence+'</span>'):"";
+  var unc=sum.uncertain?'<span class="m-unctag">uncertain</span>':"";
+  return '<div class="meter"><div class="m-h">'+title+' '+conf+'</div>'+
     '<div class="m-scale">'+segs+'</div>'+
-    '<div class="m-level '+lvlCls+'">'+sum.level+'</div>'+
+    '<div class="m-level '+lvlCls+'">'+levelText+' '+unc+'</div>'+
     (sum.note?'<div class="m-note">'+sum.note+'</div>':"")+
+    (sum.uNote?'<div class="m-unote">'+sum.uNote+'</div>':"")+
     '<div class="m-tier">'+tierBadge+' '+sum.tierLabel+'</div></div>';
 }
 
@@ -1054,10 +1269,10 @@ function renderSummaryBar(o){
   var el=document.getElementById("summaryBar");if(!el)return;
   var p=activePreset?PRESETS.find(function(x){return x.id===activePreset;}):null;
   var title=p?p.title:"Custom site",ic=p?p.ic:"C",st=state,r=o.regime;
-  var attrs=[(st.commodity==="Cu-Co"?"Copper-cobalt":"Nickel"),st.process.replace(/_/g," "),st.receptor,(st.capacity>0?st.capacity.toLocaleString()+" t/yr":"capacity unknown"),"stress "+st.bws+"%","flood "+(st.rfrLabel||st.rfr),(aq5?"Aqueduct 5.0 on":"Aqueduct 4.0")].join("  ·  ");
+  var attrs=[(st.commodity==="Cu-Co"?"Copper-cobalt":"Nickel"),st.process.replace(/_/g," "),st.receptor,((st.capacity>0&&!st.capacityUnknown)?st.capacity.toLocaleString()+" t/yr":"capacity unknown"),"stress "+st.bws+"%","flood "+(st.rfrLabel||st.rfr),(aq5?"Aqueduct 5.0 (downscaled)":"Aqueduct 4.0")].join("  ·  ");
   el.innerHTML='<div class="sb-site"><span class="sb-ic">'+ic+'</span><div><div class="sb-title">'+title+'</div><div class="sb-attrs">'+attrs+'</div></div></div>'+
     '<div class="sb-verdict"><span class="rn">'+cap(r.label)+(r.provisional?" (prov.)":"")+'</span><span class="confbadge conf-'+r.confidence+'">'+r.confidence+'</span></div>'+
-    '<div class="sb-actions"><label class="sw"><input type="checkbox" id="aq5sum" '+(aq5?"checked":"")+'><span class="track"></span><span class="sw-l">Aqueduct 5.0</span></label>'+
+    '<div class="sb-actions"><label class="sw"><input type="checkbox" id="aq5sum" '+(aq5?"checked":"")+'><span class="track"></span><span class="sw-l">Aqueduct 5.0 (downscaled)</span></label>'+
     '<button class="sb-btn" id="replayBtn">Replay</button><button class="sb-btn primary" id="editBtn">Edit inputs</button></div>';
   var a=document.getElementById("aq5sum");if(a)a.addEventListener("change",function(){setAq5(a.checked);runAndRender(true);});
   var rb=document.getElementById("replayBtn");if(rb)rb.addEventListener("click",function(){runAndRender(true);});
@@ -1149,12 +1364,12 @@ function renderOutput(o){
         (o.A.fork
           ? '<div class="wc-big sm">Not one figure</div><div class="wc-cat">the process is not confirmed</div>'+
             '<div class="forklist">'+o.A.fork.map(function(f){return '<div class="forkrow"><span class="fk-n">'+f.name+'</span><span class="fk-v">'+f.fig+'</span></div>';}).join("")+'</div>'+
-            '<div class="wc-sub">'+o.A.forkNote+'</div>'
+            '<div class="wc-sub">'+linkifySources(o.A.forkNote)+'</div>'
           : o.A.intensity
           ? '<div class="wc-big sm">'+o.A.intensity+'</div><div class="wc-cat">per tonne, capacity unknown</div>'+
             '<div class="wc-sub">'+o.A.statement+'</div>'
           : '<div class="wc-big sm">'+o.A.figure+'</div><div class="wc-cat">'+o.A.short+'</div>'+
-            '<div class="wc-sub">'+(o.A.sourceCite?('A water footprint for this process type, from '+o.A.sourceCite+'. Not a measurement of this site.'):'This is the water a mine of this type uses (Panel A pressure), shown beside the basin, not divided into it.')+'</div>')+
+            '<div class="wc-sub">'+(o.A.sourceCite?('A water footprint for this process type, from '+srcLink(o.A.sourceCite,SRC.northey)+'. Not a measurement of this site.'):((o.A.tier==="T1"||o.A.tier==="T1p")?o.A.statement:'This is the water a mine of this type uses (Panel A pressure), shown beside the basin, not divided into it.'))+'</div>')+
         '<div class="wc-tier">'+tb(o.A.tier)+' pressure</div></div>'+
     '</div>'+
     '<div class="whynote">The level comes from the basin status. The tool shows the mine water use next to it, so you can see the pressure. The tool does not divide one into the other. It does not say what part of the basin stress this mine causes. No method can do this. Question any figure that claims to.</div></div>';
@@ -1162,7 +1377,7 @@ function renderOutput(o){
     '<div id="stressMap"></div>'+
     '<div class="maplegend"><span>Low</span><i class="lg lg0"></i><i class="lg lg1"></i><i class="lg lg2"></i><i class="lg lg3"></i><i class="lg lg4"></i><span>Very High</span></div>'+
     '<div class="mapcap">'+(o.aq5?'This view is about 10 times finer. It is a downscaled, illustrative texture, not measured data. It suggests the kind of variation inside the sub-basin that one value hides. It is not attributed to the mine.':(st.edited?'This is an edited scenario. You changed the stress value by hand, so it is not an Aqueduct reading. The basin outline is real; the colour is your input.':st.real?('This is the Aqueduct 4.0 value for one sub-basin (HydroBASINS level 6'+(st.pfaf?(', pfaf '+st.pfaf):'')+'). One value covers the whole sub-basin. It hides the local variation inside it. Turn on Aqueduct 5.0 to see a downscaled, higher-resolution view.'):'This is one representative value for the area. Turn on Aqueduct 5.0 to see a downscaled, higher-resolution view.'))+'</div>'+
-    (st.source?('<div class="mapsrc">'+st.source+'</div>'):'')+'</div>';
+    (st.source?('<div class="mapsrc">'+linkifySources(st.source)+'</div>'):'')+'</div>';
   var gapIcon={measurement:"🔬",demand:"📄",seasonal:"☀",attribution:"⚖"}[o.gap.sel]||"◇";
   var secondary=o.gap.secondary.length?('<div class="secondary">Also open: '+o.gap.secondary.join("; ")+'.</div>'):"";
   var routeText={M5:"→ commission a ground sample (M5)",M4:"→ ask the operator to disclose (M4)"}[o.gap.route]||("→ "+o.gap.route);
@@ -1170,9 +1385,9 @@ function renderOutput(o){
   var readnote='<div class="readnote">The stress level is the basin\'s Aqueduct 4.0 class. The chemical hazard for this process type is in the full technical read below.</div>';
 
   var flags=r.flags.map(function(f){return '<span class="flag'+(f.warn?" warn":"")+'">'+f.t+'</span>';}).join("");
-  var aBand=A.tier==="T3"?'<p class="sub">Band basis: '+A.band+'. '+A.grade+'. '+(A.sourceNote||"We have not yet checked this range against the original study that measured it, so treat the size as a rule of thumb.")+' The direction is solid: HPAL uses far more water than RKEF. Split by source (surface, ground, sea): not public.</p>':
+  var aBand=A.tier==="T3"?'<p class="sub">Band basis: '+A.band+'. '+A.grade+'. '+linkifySources(A.sourceNote||"We have not yet checked this range against the original study that measured it, so treat the size as a rule of thumb.")+' The direction is solid: HPAL uses far more water than RKEF. Split by source (surface, ground, sea): not public.</p>':
             A.tier==="T4"?'<p class="sub">The tool routes this to a disclosure request (M4). The operator could give this number today.</p>':"";
-  var bIndicators='<p class="sub">Flood risk '+B.rfr+'. Groundwater trend: '+(B.gtd==="no_data"?"no data (shown, not hidden)":B.gtd)+'.</p>';
+  var bIndicators='<p class="sub">Flood risk '+(B.rfrLabel||B.rfr)+'. Groundwater trend: '+(B.gtd==="no_data"?"no data (shown, not hidden)":gtdText(B.gtd))+'.</p>';
   var bSeason=B.seasonalCaveat?('<p>'+B.seasonalCaveat+'</p>'):"";
   var bVintage=B.vintageFlag?('<p class="sub">'+B.vintageFlag+'</p>'):"";
   var watchInner;
@@ -1244,6 +1459,11 @@ function runAndRender(animate){
   firstPaint=false;
 }
 function analyze(){
+  if(customMode&&typeof state.lat!=="number"){
+    var ps=document.getElementById("pickStat");if(ps){ps.textContent="Place your mine on the map first, so the tool can read Aqueduct for that location.";ps.classList.remove("live");}
+    var lw=document.getElementById("locWrap");if(lw&&lw.scrollIntoView)lw.scrollIntoView({behavior:prefersReduced?"auto":"smooth",block:"center"});
+    return;
+  }
   analyzed=true;
   document.getElementById("setupWrap").hidden=true;
   document.getElementById("resultsWrap").hidden=false;
@@ -1256,6 +1476,7 @@ function editInputs(){
   document.getElementById("resultsWrap").hidden=true;
   document.getElementById("setupWrap").hidden=false;
   renderControls();
+  if(customMode)renderLocationPicker();
   window.scrollTo({top:0,behavior:"auto"});
 }
 
@@ -1272,22 +1493,22 @@ function renderMethodology(){
   document.getElementById("ladder").innerHTML=rungs.map(function(r){
     return '<div class="rung'+(r.ceil?" ceil":"")+'"><div class="rc">'+r.c+'</div><div><div class="rt">'+r.t+(r.ceil?' <span class="ceilnote">as far as this tool goes</span>':"")+'</div><div class="rd">'+r.d+'</div></div></div>';}).join("");
   var groups=[
-    {c:"R-CLASS",n:"Basin regime",x:"10 rules",d:"Classify the basin as scarcity, disruption, mixed, or none, with seasonal and vintage flags. The label orders the panels. It is a prior, not a switch."},
-    {c:"R-DEMAND",n:"Panel A demand",x:"8 rules",d:"Tier the water-use figure: measured, permitted, an estimated band, or unknown. A band wider than ten times collapses to unknown."},
-    {c:"R-COND",n:"Panel B condition",x:"7 rules",d:"Render basin indicators at true resolution. Never assert a negative from an annual average. Groundwater is its own line."},
-    {c:"R-WATCH",n:"Watchlist",x:"15 rules",d:"Route the process type to a contaminant list with evidence tiers. The empty state is the product: a data gap, not an all-clear."},
-    {c:"R-TIER",n:"Provenance",x:"6 rules",d:"Govern the tier badges. T3 is always a band. T4 absence is displayed, not hidden."},
-    {c:"R-LADDER",n:"Causal ladder",x:"8 rules",d:"Gate the language about change. Default C0. In a multi-operator belt, attribute to the area, never one named mine."},
-    {c:"R-GAP",n:"The gap line",x:"3 rules",d:"Compose one site-specific missing link, by priority: measurement, then demand, then seasonal, then the attribution boundary."},
-    {c:"R-BANNED",n:"Negative spec",x:"12 rules",d:"Block the constructions the data cannot support. Every read passes all twelve before it displays."}
+    {rn:"Class rule",c:"R-CLASS",n:"basin regime",x:"10 rules",d:"Classify the basin as scarcity, disruption, mixed, or none, with seasonal and vintage flags. The label orders the panels. It is a prior, not a switch."},
+    {rn:"Demand rule",c:"R-DEMAND",n:"Panel A demand",x:"8 rules",d:"Tier the water-use figure: measured, permitted, an estimated band, or unknown. A band wider than ten times collapses to unknown."},
+    {rn:"Condition rule",c:"R-COND",n:"Panel B condition",x:"7 rules",d:"Render basin indicators at true resolution. Never assert a negative from an annual average. Groundwater is its own line."},
+    {rn:"Watch rule",c:"R-WATCH",n:"watchlist",x:"15 rules",d:"Route the process type to a contaminant list with evidence tiers. The empty state is the product: a data gap, not an all-clear."},
+    {rn:"Tier rule",c:"R-TIER",n:"provenance",x:"6 rules",d:"Govern the tier badges. T3 is always a band. T4 absence is displayed, not hidden."},
+    {rn:"Ladder rule",c:"R-LADDER",n:"causal ladder",x:"8 rules",d:"Gate the language about change. Default C0. In a multi-operator belt, attribute to the area, never one named mine."},
+    {rn:"Gap-line rule",c:"R-GAP",n:"the gap line",x:"3 rules",d:"Compose one site-specific missing link, by priority: measurement, then demand, then seasonal, then the attribution boundary."},
+    {rn:"Negative-spec rule",c:"R-BANNED",n:"negative spec",x:"12 rules",d:"Block the constructions the data cannot support. Every read passes all twelve before it displays."}
   ];
   document.getElementById("ruleGroups").innerHTML=groups.map(function(g){
-    return '<div class="rg"><div class="rgt"><span class="rgc">'+g.c+'</span><span class="rgn">'+g.n+'</span></div><div class="rgd">'+g.x+'. '+g.d+'</div></div>';}).join("");
+    return '<div class="rg"><div class="rgt"><span class="rgn">'+g.rn+'</span><span class="rgc">'+g.c+'</span></div><div class="rgd">'+g.x+' ('+g.n+'). '+g.d+'</div></div>';}).join("");
   var samples=[
-    {h:"R-CLASS-02  Seasonal-scarcity screen",w:"WHEN the driest-quarter demand-to-supply ratio is at or above 40 percent, OR the worst-month AWARE factor is at or above 10, THEN set a seasonal-scarcity flag. When both inputs are missing, set the status to not assessed, and show it.",s:"SOURCE strawman A2 · confidence MED"},
-    {h:"R-DEMAND-06  Unknown water use",w:"WHEN there is no meter, no license, and no coefficient set for this commodity and process, THEN Panel A reads: no public figure exists for this operation's water use. Route to a disclosure request.",s:"SOURCE M2 section 3.2.3 · confidence HIGH"},
-    {h:"R-WATCH-11  Empty benchmark state",w:"WHEN no measured value exists, THEN render: no measured value exists for this site. That is a data gap, not an all-clear. Route to a measurement. The empty state is the product.",s:"SOURCE M1 section 2 and 4 · confidence HIGH"},
-    {h:"R-LADDER-06  Multi-operator rule",w:"WHEN several operators share the basin, THEN any change statement attributes to mining and industrial development in this area. A single mine is named only when geometry isolates it, and only after human sign-off.",s:"SOURCE X1 section 3 · confidence HIGH"}
+    {h:"The seasonal-scarcity screen",w:"WHEN the driest-quarter demand-to-supply ratio is at or above 40 percent, OR the worst-month AWARE factor is at or above 10, THEN set a seasonal-scarcity flag. When both inputs are missing, set the status to not assessed, and show it.",s:"SOURCE strawman A2 · confidence MED"},
+    {h:"Unknown water use",w:"WHEN there is no meter, no license, and no coefficient set for this commodity and process, THEN Panel A reads: no public figure exists for this operation's water use. Route to a disclosure request.",s:"SOURCE M2 section 3.2.3 · confidence HIGH"},
+    {h:"Empty benchmark state",w:"WHEN no measured value exists, THEN render: no measured value exists for this site. That is a data gap, not an all-clear. Route to a measurement. The empty state is the product.",s:"SOURCE M1 section 2 and 4 · confidence HIGH"},
+    {h:"The multi-operator rule",w:"WHEN several operators share the basin, THEN any change statement attributes to mining and industrial development in this area. A single mine is named only when geometry isolates it, and only after human sign-off.",s:"SOURCE X1 section 3 · confidence HIGH"}
   ];
   document.getElementById("sampleRules").innerHTML=samples.map(function(r){
     return '<div class="rulecard"><div class="rh">'+r.h+'</div><div class="rw">'+r.w+'</div><div class="rsrc">'+r.s+'</div></div>';}).join("");
@@ -1311,66 +1532,130 @@ function renderMethodology(){
 /* ---------- Decision flow (animated reveal) ---------- */
 function faTag(seq){if(!seq)return{c:"",s:""};var d=(seq.i++)*seq.step;return{c:" fa",s:' style="animation-delay:'+d+'ms"'};}
 function dsAttr(ds){return (ds!=null&&ds!==false)?(' data-step="'+ds+'"'):'';}
-function fnode(text,extra,seq,ds){var a=faTag(seq);return '<div class="fnode '+extra+a.c+'"'+dsAttr(ds)+a.s+'>'+text+'</div>';}
+/* Plain-language tooltips for every box in Step 2. Written in Simplified Technical English. */
+var TIPS={
+  r_start:"The tool starts with details about the mine and data about its river basin. It makes all later decisions from these inputs.",
+  r_q1:"Water stress is the share of available water already used each year. This asks if the value sits near the line between two risk classes.",
+  r_yes1:"The value is close to a class boundary. A small error could flip the class, so the tool does not commit to one class.",
+  r_out1:"The risk type is not clear because the number sits on a boundary. The tool says so instead of pretending to be sure.",
+  r_q2:"Aqueduct sets High water stress at 40%. At or above this level, water scarcity is the leading concern.",
+  r_yes2:"Stress is at least 40%. Ordinary scarcity leads the risk in this basin.",
+  r_out2:"The main risk is too little water for the demands already on the basin.",
+  r_q3:"This checks if the main risk is too much water at times, not too little. It uses the Aqueduct river flood value, low stress, and no seasonal flag.",
+  r_yes3:"Flood risk is the leading signal here, not scarcity.",
+  r_out3:"Flood-type events could disrupt operations and downstream people. Provisional means an expert must review this screening result, so treat it as a flag, not a final call.",
+  r_q4:"This checks if water is short in only part of the year, even if the yearly average looks fine.",
+  r_yes4:"There is a shortage signal for the dry season.",
+  r_out4:"Water is short in a dry part of the year. This adds to the picture but is not the leading risk.",
+  r_none:"No single water-risk type stands out, so the tool does not force one. This is an honest unclear result, not an all-clear.",
+  d_start:"The tool starts with no water-use number for this mine. It now searches for the most trustworthy figure.",
+  d_q1:"A metered figure is a measured, reported volume of water actually taken. It is the most trustworthy source, so the tool checks for it first.",
+  d_yes1:"A measured figure exists. The tool uses it.",
+  d_out1:"The water-use number comes from real measurement at the site. This gives the highest confidence.",
+  d_q2:"A permit states the maximum water the operator is allowed to take. It is a good fallback when no meter reading exists.",
+  d_yes2:"A permit figure exists. The tool uses the permitted amount.",
+  d_out2:"The number is the permitted limit, not measured use. It is fairly reliable, but it is a ceiling, not actual use.",
+  d_q3:"The process route sets the water used per tonne of ore. With that rate and the yearly capacity, the tool can estimate use. It needs both.",
+  d_yes3:"Both the per-tonne water rate and the capacity are known. The tool can calculate a range.",
+  d_out3:"This is a calculated estimate, shown as a low-to-high range, not one exact number. Confidence is lower than for measured or permitted figures.",
+  d_none:"The tool has no measured figure, no permit, and not enough data to estimate. It says so and asks the operator to disclose, instead of guessing.",
+  w_start:"The ore type and the process route decide which contaminants are likely. These inputs select the watchlist.",
+  w_hpal:"High-pressure acid leach of nickel laterite. Watch for chromium-6, nickel, cobalt, manganese, sulfate, and low pH.",
+  w_rkef:"Smelting route for nickel laterite, often with captive coal power. Watch for the laterite contaminants plus mercury, arsenic, and selenium from coal.",
+  w_export:"The ore is dug and shipped with no local processing. The main water risk is sediment, not process chemicals.",
+  w_ard:"Sulfide ore can create acid rock drainage, which is acid water from the rock. Watch for low pH, sulfate, and metals that dissolve in acid water.",
+  w_unconf:"The ore is laterite, but the process is not confirmed. To stay safe, the tool watches for the combined list of all candidate processes.",
+  w_unknown:"Too little is known to pick a specific list. The tool falls back to the basic regulatory contaminants only."
+};
+function tipAttr(t){return t?(' data-tip="'+String(t).replace(/"/g,'&quot;')+'"'):'';}
+function fnode(text,extra,seq,ds,tip){var a=faTag(seq);return '<div class="fnode '+extra+a.c+'"'+dsAttr(ds)+a.s+tipAttr(tip)+'>'+text+'</div>';}
 function fconn(state,label,seq){var a=faTag(seq);return '<div class="fconn-wrap '+state+a.c+'"'+a.s+'><div class="fconn"></div>'+(label?'<span class="cl">'+label+'</span>':'')+'</div>';}
-function fdec(q,val,out,state,seq,ds){var a=faTag(seq);return '<div class="fdec '+state+a.c+'"'+dsAttr(ds)+a.s+'><div class="qside"><div class="q">'+q+'</div><div class="val">'+val+'</div></div><div class="fbranch"><span class="be"></span><span class="fedge">YES</span></div><div class="yesnode">'+out+'</div></div>';}
+function fdec(q,val,out,state,seq,ds,tips){var a=faTag(seq);tips=tips||{};return '<div class="fdec '+state+a.c+'"'+dsAttr(ds)+a.s+'><div class="qside"><div class="q'+(tips.q?' tiphint':'')+'"'+tipAttr(tips.q)+'>'+q+'</div><div class="val">'+val+'</div></div><div class="fbranch"><span class="be"></span><span class="fedge"'+tipAttr(tips.yes)+'>YES</span></div><div class="yesnode"'+tipAttr(tips.out)+'>'+out+'</div></div>';}
 
 function renderFlow(o,animate){
+  if(window.__gbHideTip)window.__gbHideTip(); // clear any tooltip stuck from a prior render
   var d=o.decision;
   var seq=animate?{i:0,step:150}:null;
   _walk=[]; var wc=0;
   function pushStep(q,val,decisionText){var ds=wc++;_walk.push({ds:ds,q:q,text:val+". "+decisionText});return ds;}
+  /* Provenance: name the exact input or data source behind each step, so every box ties back to Step 1. */
+  var _pp={HPAL:"HPAL",RKEF:"RKEF",ore_export:"ore export",sulfide_flotation:"flotation",unknown:"unknown"};
+  var proc=_pp[state.process]||state.process;
+  var ore=(state.ore_type==="unknown")?"unknown ore":state.ore_type;
+  var basinNm=(state.aqsrc?state.aqsrc.split(",")[0]:"the basin at this location");
+  var capPhrase=d.capacityKnown?(state.capacity.toLocaleString()+" t/yr"):"unknown";
 
   /* Branch 1: regime */
   var ri=d.regime.indexOf("mixed")>-1?0:d.regime.indexOf("scarcity-dominant")>-1?1:d.regime.indexOf("disruption")>-1?2:d.regime.indexOf("seasonal")>-1?3:4;
   var steps=[
-    {q:"Is annual water stress near a class edge?",val:"stress "+d.bws+"%, buffer plus or minus "+d.bufferHalf+" points",out:"Mixed / indeterminate"},
-    {q:"Is annual water stress 40% or higher?",val:"stress "+d.bws+"%",out:"Scarcity-dominant"},
-    {q:"Is it flood-driven?",val:"flood "+d.rfr+", stress "+(d.stressUnder20?"under 20%":"20% or more")+", seasonal "+(d.seasonalFlag?"set":"clear"),out:"Disruption-dominant"+(d.provisional?" (provisional)":"")},
-    {q:"Is a seasonal-scarcity flag set?",val:"driest quarter or AWARE screen: "+(d.seasonalFlag?"flag set":"no flag"),out:"Seasonal scarcity (secondary)"}
+    {q:"Is annual water stress near a class edge?",val:"your basin: Aqueduct stress "+d.bws+"% · class edges at 20% and 40%",out:"Mixed / indeterminate",tip:{
+      q:"A class edge is the line between two Aqueduct risk classes, for example 20% or 40%. This step asks if your basin value sits close to one. The stress value, "+d.bws+"%, is read from Aqueduct 4.0 for "+basinNm+", the site you chose. You did not type it.",
+      yes:"Your "+d.bws+"% is within "+d.bufferHalf+" points of a class edge. The class is not firm, so the tool does not commit to one.",
+      out:"The risk type is not clear because your value sits on a boundary. The tool says so instead of forcing one class."}},
+    {q:"Is annual water stress 40% or higher?",val:"your basin: Aqueduct stress "+d.bws+"%",out:"Scarcity-dominant",tip:{
+      q:"Aqueduct calls 40% or more High water stress. This checks your basin value, "+d.bws+"% read from Aqueduct 4.0 for "+basinNm+", against that line.",
+      yes:"Your "+d.bws+"% is at or above 40%, so ordinary scarcity leads the risk here.",
+      out:"The main risk is too little water for the demands already on the basin."}},
+    {q:"Is it flood-driven?",val:"your basin: Aqueduct flood "+d.rfr+" · stress "+(d.stressUnder20?"under 20%":"20% or more")+" · seasonal "+(d.seasonalFlag?"set":"clear"),out:"Disruption-dominant"+(d.provisional?" (provisional)":""),tip:{
+      q:"This asks if the main risk is too much water at times, not too little. It uses the Aqueduct flood value for "+basinNm+", which is "+d.rfr+", together with your low stress and the seasonal screen.",
+      yes:"Flood risk is the leading signal for your site, not scarcity.",
+      out:"Flood-type events could disrupt operations and people downstream. Provisional means an expert must confirm this screening result. Treat it as a flag, not a final call."}},
+    {q:"Is a seasonal-scarcity flag set?",val:"your inputs: AWARE "+(state.aware_on?"given":"not given")+(aq5?" · Aqueduct 5.0 dry-season on":""),out:"Seasonal scarcity (secondary)",tip:{
+      q:"This checks if water is short in only part of the year, even if the annual value looks fine. The signal comes from the AWARE input, which you "+(state.aware_on?"gave":"did not give")+(aq5?", and the Aqueduct 5.0 dry-season data":"")+".",
+      yes:"There is a dry-season shortage signal for your site.",
+      out:"Water is short in a dry part of the year. It adds to the picture but is not the leading risk."}}
   ];
-  var h=fnode("Site inputs","start",seq,null)+fconn("active","",seq);
+  var h=fnode("Site inputs","start",seq,null,"The tool starts from what you chose in Step 1 and the basin data for that location. Here: "+(state.commodity==="Cu-Co"?"copper-cobalt":"nickel")+", process "+proc+", and Aqueduct 4.0 values for "+basinNm+". Every step below reads from these.")+fconn("active","",seq);
   for(var i=0;i<steps.length;i++){
     var st=i<ri?"no":i===ri?"taken":"faded", ds=null;
     if(i<=ri){ds=pushStep(steps[i].q,steps[i].val,i===ri?("Yes, so the water-risk regime is "+steps[i].out+"."):"No, so the tool moves on.");}
-    h+=fdec(steps[i].q,steps[i].val,steps[i].out,st,seq,ds);
+    h+=fdec(steps[i].q,steps[i].val,steps[i].out,st,seq,ds,steps[i].tip);
     h+=fconn(i<ri?"active":"faded",i<ri?"NO":"",seq);
   }
   var regimeDefaultDs=(ri===4)?pushStep("No branch matched","stress low, not flood-driven, no seasonal flag","No single water-risk type dominates here."):null;
-  h+=fnode("No dominant regime asserted","outcome "+(ri===4?"active":"faded"),seq,regimeDefaultDs);
+  h+=fnode("No dominant regime asserted","outcome "+(ri===4?"active":"faded"),seq,regimeDefaultDs,"No single water-risk type stands out from your basin values, so the tool does not force one. This is an honest unclear result, not an all-clear.");
   document.getElementById("flowRegime").innerHTML=h;
 
   /* Branch 2: water-use tier ladder */
   var dt=d.demandTier,di=dt==="T1"?0:dt==="T1p"?1:dt==="T3"?2:3;
   var dsteps=[
-    {q:"Is there a metered withdrawal figure?",val:"metered figure "+(d.metered?"available":"none"),out:"Measured figure"},
-    {q:"Is there a license or permit figure?",val:"license figure "+(d.licensed?"available":"none"),out:"From a permit"},
-    {q:"Coefficient set and capacity known?",val:"process "+(d.processKnown?"known":"unknown")+", capacity "+(d.capacityKnown?"known":"unknown"),out:"Our estimate (a range)"}
+    {q:"Is there a metered withdrawal figure?",val:"your inputs: "+(d.metered?("metered "+d.meteredFig):"no metered figure entered"),out:"Measured figure",tip:{
+      q:"A metered figure is a measured volume of water actually taken. It is the most trustworthy source. "+(d.metered?("You entered "+d.meteredFig+"."):"You did not enter a metered figure."),
+      yes:"You entered a measured figure, so the tool uses it.",
+      out:"The number comes from real measurement at the site. This is the highest confidence."}},
+    {q:"Is there a license or permit figure?",val:"your inputs: "+(d.licensed?("permit "+d.licenseFig):"no permit figure entered"),out:"From a permit",tip:{
+      q:"A permit states the most water the operator may take. It is a good fallback when no meter reading exists. "+(d.licensed?("You entered a permit limit of "+d.licenseFig+"."):"You did not enter a permit figure."),
+      yes:"You entered a permit figure, so the tool uses the permitted amount.",
+      out:"The number here is the permit limit you entered, not measured use. It is a ceiling, not actual use."}},
+    {q:"Coefficient set and capacity known?",val:"your inputs: process "+proc+" · capacity "+capPhrase,out:"Our estimate (a range)",tip:{
+      q:"With the process route and the yearly capacity, the tool can estimate water use. It needs both. You chose the "+proc+" process, and the capacity is "+capPhrase+".",
+      yes:"Both the per-tonne water rate and the capacity are known, so the tool calculates a range.",
+      out:"A calculated estimate, shown as a low-to-high range, not one exact number. Lower confidence than a measured or permitted figure."}}
   ];
-  var h2=fnode("No water-use figure yet","start",seq,null)+fconn("active","",seq);
+  var h2=fnode("No water-use figure yet","start",seq,null,TIPS.d_start)+fconn("active","",seq);
   for(var j=0;j<dsteps.length;j++){
     var s2=j<di?"no":j===di?"taken":"faded", ds2=null;
     if(j<=di){ds2=pushStep(dsteps[j].q,dsteps[j].val,j===di?("Yes, so the water-use figure is "+dsteps[j].out+"."):"No, so the tool keeps looking.");}
-    h2+=fdec(dsteps[j].q,dsteps[j].val,dsteps[j].out,s2,seq,ds2);
+    h2+=fdec(dsteps[j].q,dsteps[j].val,dsteps[j].out,s2,seq,ds2,dsteps[j].tip);
     h2+=fconn(j<di?"active":"faded",j<di?"NO":"",seq);
   }
   var demandDefaultDs=(di===3)?pushStep("No usable water-use figure","no measurement, no permit, no scalable estimate","No public figure. "+(d.demandReason||"routed to disclosure")+"."):null;
-  h2+=fnode((di===3?("No data: "+(d.demandReason||"routed to disclosure")):"No data"),"outcome "+(di===3?"active":"faded"),seq,demandDefaultDs);
+  h2+=fnode((di===3?("No data: "+(d.demandReason||"routed to disclosure")):"No data"),"outcome "+(di===3?"active":"faded"),seq,demandDefaultDs,"From your inputs the tool has no metered figure, no permit, and not enough to estimate. It says so and asks the operator to disclose, instead of guessing a number.");
   document.getElementById("flowDemand").innerHTML=h2;
 
   /* Branch 3: watchlist route (switch) */
   var routes=[
-    {k:"HPAL laterite",tag:"Cr(VI), Ni, Co, Mn, sulfate, pH"},
-    {k:"RKEF laterite",tag:"laterite rows + Hg, As, Se"},
-    {k:"Ore-export laterite",tag:"sediment-dominant"},
-    {k:"Sulfide / ARD",tag:"acid-rock drainage rows"},
-    {k:"Laterite, process unconfirmed",tag:"union of candidate rows"},
-    {k:"Unknown or sparse",tag:"regulatory floor only"}
+    {k:"HPAL laterite",tag:"Cr(VI), Ni, Co, Mn, sulfate, pH",tip:TIPS.w_hpal},
+    {k:"RKEF laterite",tag:"laterite rows + Hg, As, Se",tip:TIPS.w_rkef},
+    {k:"Ore-export laterite",tag:"sediment-dominant",tip:TIPS.w_export},
+    {k:"Sulfide / ARD",tag:"acid-rock drainage rows",tip:TIPS.w_ard},
+    {k:"Laterite, process unconfirmed",tag:"union of candidate rows",tip:TIPS.w_unconf},
+    {k:"Unknown or sparse",tag:"regulatory floor only",tip:TIPS.w_unknown}
   ];
   var wr=d.watchRoute||"";
-  var watchDs=pushStep("Which contaminants to watch for?","from the ore type and process route","The tool uses the "+wr+" list.");
-  var h3=fnode("Ore type and process route","start",seq,null)+fconn("active","",seq)+'<div class="switchchips">';
-  h3+=routes.map(function(rt){var on=wr.indexOf(rt.k)>-1;var a=faTag(seq);return '<div class="switchchip'+(on?" active":"")+a.c+'"'+(on?(' data-step="'+watchDs+'"'):'')+a.s+'><span>'+rt.k+'</span><span class="tag">'+rt.tag+'</span></div>';}).join("");
+  var watchDs=pushStep("Which contaminants to watch for?","your inputs: ore "+ore+" · process "+proc,"The tool uses the "+wr+" list.");
+  var h3=fnode("Ore type and process route","start",seq,null,"The ore type and process route you chose decide which contaminants are likely. You picked ore "+ore+" and process "+proc+". These inputs select the watchlist.")+fconn("active","",seq)+'<div class="switchchips">';
+  h3+=routes.map(function(rt){var on=wr.indexOf(rt.k)>-1;var a=faTag(seq);return '<div class="switchchip'+(on?" active":"")+a.c+'"'+(on?(' data-step="'+watchDs+'"'):'')+a.s+tipAttr(rt.tip)+'><span>'+rt.k+'</span><span class="tag">'+rt.tag+'</span></div>';}).join("");
   h3+='</div>';
   document.getElementById("flowWatch").innerHTML=h3;
 
@@ -1480,6 +1765,22 @@ document.getElementById("helpBtn").addEventListener("click",openOnboard);
 document.getElementById("thesisHelp").addEventListener("click",openOnboard);
 onboard.addEventListener("click",function(e){if(e.target===onboard)closeOnboard();});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!onboard.hidden)closeOnboard();});
+
+/* Hover and focus tooltips for any element carrying data-tip (used across Step 2) */
+(function(){
+  var tip=null,curEl=null;
+  function ensure(){if(!tip){tip=document.createElement("div");tip.className="gb-tip";document.body.appendChild(tip);}return tip;}
+  function place(el,e){var r=el.getBoundingClientRect();var eh=e.offsetHeight,ew=e.offsetWidth;var top=r.top-eh-8;if(top<6)top=r.bottom+8;var left=r.left+r.width/2-ew/2;left=Math.max(6,Math.min(left,window.innerWidth-ew-6));e.style.top=top+"px";e.style.left=left+"px";}
+  function show(el){var t=el.getAttribute("data-tip");if(!t)return;curEl=el;var e=ensure();e.textContent=t;e.classList.add("on");place(el,e);}
+  function hide(){curEl=null;if(tip)tip.classList.remove("on");}
+  window.__gbHideTip=hide;
+  function nearest(n){return n&&n.closest?n.closest("[data-tip]"):null;}
+  document.addEventListener("mouseover",function(ev){var el=nearest(ev.target);if(el&&el!==curEl)show(el);});
+  document.addEventListener("mouseout",function(ev){var el=nearest(ev.target);if(el&&el===curEl){var to=nearest(ev.relatedTarget);if(to!==curEl)hide();}});
+  document.addEventListener("focusin",function(ev){var el=nearest(ev.target);if(el)show(el);});
+  document.addEventListener("focusout",hide);
+  window.addEventListener("scroll",hide,true);
+})();
 
 /* boot */
 renderPresets();

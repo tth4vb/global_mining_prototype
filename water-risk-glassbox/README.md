@@ -40,7 +40,7 @@ The logic encodes the read-spine ruleset (`../research/methodology/water-risk-ru
 
 ## Honesty notes (for anyone presenting this)
 
-- Preset basin numbers are illustrative, chosen to fit the documented qualitative calls. They are not published Aqueduct reads of named real sites, and the app labels them as presets.
+- Basin values (baseline water stress, riverine flood risk, groundwater trend, seasonal variability) are read live from Aqueduct 4.0 for the site location (Esri Living Atlas mirror, HydroBASINS L6). They are read-only in the UI, not editable. The preset values shipped in the file act only as an offline fallback and match the live Aqueduct reads for the three named sites.
 - Three rules rest on authored bridges, not settled doctrine: the gap-line priority order, the provisional-disruption label, and whether to show the HPAL water-use magnitude before it is primary-sourced. These are flagged in the ruleset for SME sign-off.
 - The ARD contaminant rows for the copper-cobalt case are shown generically on purpose. The exact list is Phase-3 authoring work.
 
