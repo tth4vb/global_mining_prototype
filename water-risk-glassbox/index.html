@@ -469,6 +469,8 @@ table.dt td.avail{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-we
 .ic-share-n{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:30px;line-height:1;color:var(--ink)}
 .ic-share-n .rng{font-size:17px;color:var(--ink-3);font-weight:600;margin:0 7px;vertical-align:2px}
 .ic-share-l{font-size:12px;color:var(--ink-2)}
+.ic-aq5tag{font-family:"IBM Plex Mono",monospace;font-size:9px;font-weight:600;letter-spacing:.03em;color:var(--t3);border:1px solid var(--t3);background:var(--t3-bg);border-radius:5px;padding:1px 5px;margin-left:4px;white-space:nowrap}
+.ic-share-sub{font-size:11px;color:var(--ink-3);margin-top:3px}
 .lvl-high-t{color:var(--bad)}.lvl-medium-t{color:var(--warn)}.lvl-low-t{color:var(--good)}.lvl-unknown-t{color:var(--ink-2)}
 .ic-src{font-size:11px;color:var(--ink-3);margin:9px 0 0;line-height:1.45}
 .mapcard{margin:4px 16px 6px;border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface)}
@@ -1073,7 +1075,7 @@ function runEngine(s,aq5){
   var haveBa=(Ba!=null&&Ba>0), closedArid=(disMs!=null&&disMs<0.1);
   var shareLo=null, shareHi=null;
   if(impKnown&&haveBa){shareLo=100*impLo/Ba;shareHi=100*impHi/Ba;}
-  var impLevel, impVerdict, impBadge, impConf=null, impShare=null;
+  var impLevel, impVerdict, impBadge, impConf=null, impShare=null, dry5Lo=null, dry5Hi=null, dry5F=null;
   if(!impKnown){
     impLevel="unknown";impBadge="Need water use";impVerdict="Enter or estimate the mine's water use, so the tool can size its share of the basin's water. Version 0.1 has an on-site estimate for nickel HPAL and RKEF only.";
   } else if(closedArid){
@@ -1083,24 +1085,38 @@ function runEngine(s,aq5){
     impLevel="unknown";impBadge="No basin flow data";impConf=(impTier==="measured"?"MED":"LOW");
     impVerdict="The mine's on-site use is about "+(impLo===impHi?fmtVol(impLo):fmtVol(impLo)+" to "+fmtVol(impHi))+", but the tool has no natural-flow value for this sub-basin, so it cannot size the share.";
   } else {
-    impShare=(Math.round(shareLo*10)/10)+" to "+(Math.round(shareHi*10)/10)+"% of the basin's natural river flow";
-    var sHi=shareHi;
-    if(sHi>=20){impLevel="high";impBadge="Likely material";}
-    else if(sHi>=5){impLevel="medium";impBadge="Possibly material";}
-    else if(sHi>=1){impLevel="low";impBadge="Minor at basin scale";}
+    var r1=function(x){return Math.round(x*10)/10;};
+    /* Aqueduct 5.0 (downscaled): finer data means the mine draws from a smaller local unit and
+       the dry-season flow is lower, so the share rises. Dry-quarter flow is taken as a fraction
+       of annual mean flow, set by the basin's seasonal variability. Illustrative, not measured. */
+    if(aq5){
+      var _sev=s.sevLabel||"";
+      dry5F=/Extremely High/i.test(_sev)?0.12:/Medium-High/i.test(_sev)?0.28:/High/i.test(_sev)?0.18:/Low-Medium/i.test(_sev)?0.4:/Low/i.test(_sev)?0.55:0.35;
+      dry5Lo=shareLo/dry5F; dry5Hi=shareHi/dry5F;
+    }
+    var effHi=aq5?dry5Hi:shareHi;
+    impShare=r1(shareLo)+" to "+r1(shareHi)+"% of the basin's natural river flow";
+    if(effHi>=20){impLevel="high";impBadge="Likely material";}
+    else if(effHi>=5){impLevel="medium";impBadge="Possibly material";}
+    else if(effHi>=1){impLevel="low";impBadge="Minor at basin scale";}
     else{impLevel="low";impBadge="Small at basin scale";}
-    impConf=(impTier==="measured"?"HIGH":impTier==="permitted"?"MED":"MED");
-    impVerdict="This mine's on-site water use is about "+impShare+". "+
-      (sHi>=20?"That is a large share, so it is likely to raise water stress here.":
-       sHi>=5?"That is a meaningful share, enough to matter for other users in the basin.":
-       "That is a small share of the annual flow.")+
-      (seasonalRisk?" In the dry season the flow drops and the share is higher.":"");
+    impConf=(impTier==="measured"?"HIGH":"MED");
+    if(aq5){
+      impVerdict="At Aqueduct 5.0 resolution, this mine's on-site use is about "+r1(dry5Lo)+" to "+r1(dry5Hi)+"% of the basin's flow in the driest quarter. That is higher than about "+r1(shareLo)+" to "+r1(shareHi)+"% on the whole-basin annual average. Finer data usually shows more local risk here, not less. This dry-season estimate is illustrative.";
+    } else {
+      impVerdict="This mine's on-site water use is about "+impShare+". "+
+        (effHi>=20?"That is a large share, so it is likely to raise water stress here.":
+         effHi>=5?"That is a meaningful share, enough to matter for other users in the basin.":
+         "That is a small share of the annual flow.")+
+        (seasonalRisk?" In the dry season the flow drops and the share is higher. Turn on Aqueduct 5.0 to see the driest-quarter estimate.":"");
+    }
   }
   var impDraw=impKnown?(impLo===impHi?fmtVol(impLo):(fmtVol(impLo)+" to "+fmtVol(impHi))):null;
   var impPeople=impKnown?Math.round(impMid/50):null; // ~50 m3 per person per year household use
   out.impact={
     known:impKnown, computed:(impShare!=null), level:impLevel, badge:impBadge, verdict:impVerdict, confidence:impConf,
     share:impShare, shareLo:shareLo, shareHi:shareHi,
+    aq5:(impShare!=null&&aq5), dryLo:dry5Lo, dryHi:dry5Hi, dryFactor:dry5F,
     flowText:(Ba!=null)?(fmtVol(Ba)+" of natural river flow"):null, disMs:disMs, closedArid:closedArid,
     draw:impDraw, kind:impKind, tier:impTier, people:impPeople,
     natureMain:"Withdrawal pressure. The mine takes water on site that the basin also supplies to farms, people, and nature.",
@@ -1108,7 +1124,9 @@ function runEngine(s,aq5){
     contamNote:(!near)?"The mine also carries a contamination watch. That is a separate kind of impact, on water quality, shown in the watchlist below.":null,
     footprintNote:(impTier==="estimated")?"This uses the mine's on-site water use, which is much smaller than the total water footprint shown above. Most of the total footprint is used off site, to make sulphuric acid.":null,
     src:(Ba!=null)?"Basin natural river flow from HydroATLAS (Linke et al. 2019). On-site water use from Northey and Haque 2013.":null,
-    cantSay:"This share uses the whole sub-basin's natural flow. The local river reach or aquifer the mine draws from may see a much larger change, which needs site hydrology. The dry-season low flow is not modeled here yet.",
+    cantSay:(aq5&&impShare!=null
+      ?"The Aqueduct 5.0 dry-season share is a downscaled, illustrative estimate, not measured local data. The exact river reach or aquifer the mine draws from still needs site hydrology."
+      :"This share uses the whole sub-basin's natural annual flow. The local river reach or aquifer the mine draws from may see a much larger change, which needs site hydrology. The dry-season low flow is not modeled here yet. Turn on Aqueduct 5.0 for a downscaled dry-season estimate."),
     projection:"This is a projection from the mine's own water demand, not an observed change. The tool never says the mine caused a measured change."
   };
 
@@ -1480,15 +1498,21 @@ function renderOutput(o){
   var gapHtml='<div class="gap"><div class="gh"><span class="gi">'+gapIcon+'</span><h3>The gap that remains</h3></div><p>'+o.gap.text+'</p><div class="route">'+routeText+'</div>'+secondary+'</div>';
   var readnote='<div class="readnote">The stress level is the basin\'s Aqueduct 4.0 class. The chemical hazard for this process type is in the full technical read below.</div>';
   var im=o.impact;
+  var r1=function(x){return Math.round(x*10)/10;};
   var impConfChip=im.confidence?('<span class="confbadge conf-'+im.confidence+'">confidence '+im.confidence+'</span>'):'';
-  var shareBlock=im.computed
-    ?('<div class="ic-share"><div class="ic-share-n lvl-'+im.level+'-t">'+(Math.round(im.shareLo*10)/10)+'<span class="rng">to</span>'+(Math.round(im.shareHi*10)/10)+'%</div><div class="ic-share-l">of the basin\'s natural river flow</div></div>')
-    :'';
+  var shareBlock='';
+  if(im.computed&&im.aq5){
+    shareBlock='<div class="ic-share"><div class="ic-share-n lvl-'+im.level+'-t">'+r1(im.dryLo)+'<span class="rng">to</span>'+r1(im.dryHi)+'%</div>'+
+      '<div class="ic-share-l">of the driest-quarter river flow <span class="ic-aq5tag">Aqueduct 5.0, downscaled</span></div>'+
+      '<div class="ic-share-sub">about '+r1(im.shareLo)+' to '+r1(im.shareHi)+'% on the whole-basin annual average</div></div>';
+  } else if(im.computed){
+    shareBlock='<div class="ic-share"><div class="ic-share-n lvl-'+im.level+'-t">'+r1(im.shareLo)+'<span class="rng">to</span>'+r1(im.shareHi)+'%</div><div class="ic-share-l">of the basin\'s natural river flow</div></div>';
+  }
   var drawCell=im.known
     ?('<div class="ic-cell"><div class="ic-k">On-site water use</div><div class="ic-v">'+im.draw+'</div><div class="ic-note">'+im.kind+(im.people?('. About '+im.people.toLocaleString()+' people\'s yearly household water, at ~50 m3 each.'):'')+'</div></div>')
     :('<div class="ic-cell"><div class="ic-k">On-site water use</div><div class="ic-v">not entered</div><div class="ic-note">Add a metered or permitted figure, or a nickel process and capacity, so the tool can size it.</div></div>');
   var secondCell=im.flowText
-    ?('<div class="ic-cell"><div class="ic-k">Basin river flow</div><div class="ic-v">'+fmtVol(im.disMs*31556952)+'</div><div class="ic-note">Natural annual river flow for this sub-basin (HydroATLAS). The denominator for the share.</div></div>')
+    ?('<div class="ic-cell"><div class="ic-k">Basin river flow</div><div class="ic-v">'+fmtVol(im.disMs*31556952)+'</div><div class="ic-note">Natural annual river flow for this sub-basin (HydroATLAS). '+(im.aq5?('In the driest quarter it drops to roughly '+fmtVol(im.disMs*31556952*im.dryFactor)+', the denominator used above.'):'The denominator for the share.')+'</div></div>')
     :('<div class="ic-cell"><div class="ic-k">Nature</div><div class="ic-v">Withdrawal pressure</div><div class="ic-note">'+im.natureMain+(im.natureNote?(' '+im.natureNote):'')+'</div></div>');
   var impactCard='<div class="impactcard">'+
     '<div class="ic-h"><span class="ic-ic">&#8594;</span><h3>What this mine would add to the basin</h3><span class="ic-badge lvl-'+im.level+'">'+im.badge+'</span>'+impConfChip+'</div>'+
